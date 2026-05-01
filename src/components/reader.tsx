@@ -91,7 +91,7 @@ export function Reader({ title, author, genre, coverUrl, pages, onClose }: Reade
         className="relative flex justify-center items-center z-10"
       >
         {/* Close */}
-        <button onClick={onClose} className="absolute -top-10 md:-top-14 right-0 text-[#f5f0e6] hover:text-white hover:bg-white/20 z-[70] rounded-full p-2">
+        <button onClick={onClose} className="absolute top-0 -right-16 text-[#f5f0e6] hover:text-white hover:bg-white/20 z-[70] rounded-full p-2">
           <X className="w-6 h-6 md:w-8 md:h-8" />
         </button>
 
