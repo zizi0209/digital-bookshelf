@@ -23,8 +23,8 @@ export function ShelfBook({ title, author, coverUrl, onClick, delay = 0 }: Shelf
           <Image src={coverUrl} alt={title} fill className="object-cover" referrerPolicy="no-referrer" sizes="120px" />
         ) : (
           <div className="flex flex-col items-center justify-center h-full p-3 text-center">
-            <span className="font-serif font-bold text-sm leading-tight line-clamp-3 text-[#4a3520]">{title}</span>
-            {author && <span className="text-[10px] mt-2 opacity-60 uppercase tracking-wide text-[#6b5a48]" style={{ fontFamily: "'Inter',sans-serif" }}>{author}</span>}
+            <span className="font-serif font-bold text-sm leading-tight line-clamp-3 text-[#3d2b1f]">{title}</span>
+            {author && <span className="text-[10px] mt-2 opacity-60 uppercase tracking-wide text-[#5c544d]" style={{ fontFamily: "'Inter',sans-serif" }}>{author}</span>}
           </div>
         )}
       </div>

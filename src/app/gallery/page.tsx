@@ -44,7 +44,7 @@ export default function GalleryPage() {
         <div className="shelf-wall flex-1 p-8"><BookSkeleton /></div>
       ) : filtered.length === 0 ? (
         <div className="shelf-wall flex-1 flex items-center justify-center">
-          <div className="text-center py-20 text-white/70 flex flex-col items-center">
+          <div className="text-center py-20 text-[#8e8a7d] flex flex-col items-center">
             <Users className="w-12 h-12 mb-4 opacity-30" />
             <p className="text-lg font-serif">Phòng trưng bày đang trống.</p>
             <p className="text-sm opacity-60 mt-1" style={{ fontFamily: "'Inter',sans-serif" }}>

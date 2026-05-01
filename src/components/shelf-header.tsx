@@ -16,7 +16,7 @@ export function ShelfHeader({ title, search, onSearchChange, sort, onSortChange 
   return (
     <div className="bookshelf-header">
       <div className="relative">
-        <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40" />
+        <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#fdfaf6]/40" />
         <input type="text" value={search} onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Tìm kiếm..." className="bookshelf-search" />
       </div>

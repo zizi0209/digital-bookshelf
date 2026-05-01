@@ -45,12 +45,12 @@ export default function Home() {
         <div className="shelf-wall flex-1 p-8"><BookSkeleton /></div>
       ) : filtered.length === 0 ? (
         <div className="shelf-wall flex-1 flex items-center justify-center">
-          <div className="text-center py-20 text-white/70 flex flex-col items-center">
+          <div className="text-center py-20 text-[#8e8a7d] flex flex-col items-center">
             <Library className="w-12 h-12 mb-4 opacity-30" />
             <p className="text-lg font-serif">Kệ sách đang trống.</p>
             <p className="text-sm opacity-60 mt-1" style={{ fontFamily: "'Inter',sans-serif" }}>Chưa có tác phẩm nào.</p>
             <button onClick={() => seed()}
-              className="mt-6 px-6 py-2 rounded-lg text-sm border border-white/25 text-white/70 hover:bg-white/10 transition-colors"
+              className="mt-6 px-6 py-2 rounded-lg text-sm border border-[#e5e0d5] text-[#5c544d] hover:bg-[#f2ede4] transition-colors"
               style={{ fontFamily: "'Inter',sans-serif" }}>
               Tạo Dữ Liệu Mẫu
             </button>

@@ -1,34 +1,34 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #f5f0ff;
-  --color-foreground: #2d2440;
-  --color-primary: #7c5cbf;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #ede7f6;
-  --color-muted: #e8e0f0;
-  --color-muted-foreground: #8a7fa0;
-  --color-accent: #b39ddb;
-  --color-destructive: #c0392b;
-  --color-border: #d5cce6;
-  --color-input: #ddd5ec;
-  --color-ring: #7c5cbf;
+  --color-background: #fdfaf6;
+  --color-foreground: #3d2b1f;
+  --color-primary: #5a5a40;
+  --color-primary-foreground: #fdfaf6;
+  --color-secondary: #f9f6f0;
+  --color-muted: #f2ede4;
+  --color-muted-foreground: #8e8a7d;
+  --color-accent: #f2ede4;
+  --color-destructive: #944e4e;
+  --color-border: #e5e0d5;
+  --color-input: #dcd7cc;
+  --color-ring: #5a5a40;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: #8b6fc0;
-  color: #2d2440;
+  background: #fdfaf6;
+  color: #3d2b1f;
   font-family: 'Cormorant Garamond', Georgia, serif;
   min-height: 100vh;
 }
 
-::selection { background: #7c5cbf; color: #fff; }
+::selection { background: #5a5a40; color: #fdfaf6; }
 
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #b39ddb; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: #dcd7cc; border-radius: 3px; }
 
 /* 3D utilities (reader) */
 .perspective-1000 { perspective: 1000px; }
@@ -37,11 +37,11 @@ body {
 .-rotate-y-90 { transform: rotateY(-90deg); }
 .rotate-y-90 { transform: rotateY(90deg); }
 
-/* ===== Lavender Bookshelf ===== */
+/* ===== Vintage Bookshelf ===== */
 
-/* Purple gradient wall */
+/* Warm parchment wall */
 .shelf-wall {
-  background: linear-gradient(180deg, #9b7fd4 0%, #8b6fc0 40%, #7a5fb0 100%);
+  background: linear-gradient(180deg, #f9f6f0 0%, #f2ede4 40%, #ece6da 100%);
   position: relative;
   min-height: 300px;
   padding: 0 32px;
@@ -59,16 +59,16 @@ body {
   min-height: 260px;
 }
 
-/* Cream-colored shelf plank */
+/* Wooden shelf plank */
 .shelf-plank {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   height: 18px;
-  background: linear-gradient(180deg, #f0e6d3 0%, #e6d9c0 50%, #d4c4a8 100%);
-  border-top: 1px solid #f5eed8;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2), 0 1px 0 #f8f2e4 inset;
+  background: linear-gradient(180deg, #e5e0d5 0%, #dcd7cc 50%, #d0c8b8 100%);
+  border-top: 1px solid #f2ede4;
+  box-shadow: 0 4px 12px rgba(61,43,31,0.12), 0 1px 0 #f9f6f0 inset;
   z-index: 15;
 }
 .shelf-plank::after {
@@ -78,8 +78,8 @@ body {
   left: 0;
   right: 0;
   height: 10px;
-  background: linear-gradient(180deg, #c9b896 0%, #b8a882 100%);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  background: linear-gradient(180deg, #c9bfa9 0%, #b8a882 100%);
+  box-shadow: 0 4px 8px rgba(61,43,31,0.1);
 }
 
 /* Shadow behind books */
@@ -90,7 +90,7 @@ body {
   left: 0;
   right: 0;
   height: 60%;
-  background: linear-gradient(180deg, rgba(0,0,0,0.08) 0%, transparent 100%);
+  background: linear-gradient(180deg, rgba(61,43,31,0.05) 0%, transparent 100%);
   z-index: 0;
   pointer-events: none;
 }
@@ -115,17 +115,17 @@ body {
   border-radius: 3px 6px 6px 3px;
   overflow: hidden;
   position: relative;
-  background: #f5f0e8;
+  background: #f9f6f0;
   box-shadow:
-    3px 3px 10px rgba(0,0,0,0.25),
-    -1px 0 4px rgba(0,0,0,0.08),
-    inset -2px 0 6px rgba(0,0,0,0.06);
+    3px 3px 10px rgba(61,43,31,0.18),
+    -1px 0 4px rgba(61,43,31,0.06),
+    inset -2px 0 6px rgba(61,43,31,0.04);
 }
 .shelf-book-cover::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(110deg, rgba(255,255,255,0.18) 0%, transparent 35%, rgba(0,0,0,0.04) 100%);
+  background: linear-gradient(110deg, rgba(255,255,255,0.18) 0%, transparent 35%, rgba(61,43,31,0.04) 100%);
   pointer-events: none;
 }
 .shelf-book-cover::before {
@@ -133,7 +133,7 @@ body {
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 5px;
-  background: linear-gradient(90deg, rgba(0,0,0,0.2), rgba(0,0,0,0.02));
+  background: linear-gradient(90deg, rgba(61,43,31,0.15), rgba(61,43,31,0.02));
   z-index: 2;
 }
 
@@ -144,7 +144,7 @@ body {
   left: 8%;
   width: 84%;
   height: 6px;
-  background: radial-gradient(ellipse, rgba(0,0,0,0.2) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(61,43,31,0.15) 0%, transparent 70%);
   transition: all 0.3s;
 }
 .shelf-book:hover .shelf-book-shadow {
@@ -152,53 +152,51 @@ body {
   transform: scaleX(1.15);
 }
 
-/* Book title under cover — NOT shown on this design, but kept for accessibility */
-.shelf-book-title {
-  display: none;
-}
+/* Book title — hidden */
+.shelf-book-title { display: none; }
 
-/* ===== Header bar (glassmorphism purple) ===== */
+/* ===== Header bar (glassmorphism vintage) ===== */
 .bookshelf-header {
-  background: rgba(90,55,140,0.85);
+  background: rgba(90,90,64,0.88);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255,255,255,0.12);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
   padding: 10px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  color: #f0e6ff;
+  color: #fdfaf6;
   font-family: 'Inter', sans-serif;
 }
 
 .bookshelf-search {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(253,250,246,0.1);
+  border: 1px solid rgba(253,250,246,0.2);
   border-radius: 8px;
   padding: 7px 12px 7px 34px;
-  color: #f0e6ff;
+  color: #fdfaf6;
   font-size: 13px;
   outline: none;
   width: 200px;
   transition: border-color 0.2s;
 }
-.bookshelf-search:focus { border-color: rgba(255,255,255,0.5); }
-.bookshelf-search::placeholder { color: rgba(255,255,255,0.4); }
+.bookshelf-search:focus { border-color: rgba(253,250,246,0.5); }
+.bookshelf-search::placeholder { color: rgba(253,250,246,0.4); }
 
 .sort-btn {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(253,250,246,0.08);
+  border: 1px solid rgba(253,250,246,0.18);
   border-radius: 8px;
   padding: 6px 14px;
-  color: rgba(240,230,255,0.7);
+  color: rgba(253,250,246,0.7);
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
   font-family: 'Inter', sans-serif;
 }
 .sort-btn:hover, .sort-btn.active {
-  background: rgba(255,255,255,0.2);
-  color: #fff;
+  background: rgba(253,250,246,0.2);
+  color: #fdfaf6;
 }
 
 /* Responsive */

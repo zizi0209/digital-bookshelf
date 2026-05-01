@@ -34,19 +34,19 @@ export default function SubmitPage() {
     } catch { toast.error("Có lỗi xảy ra."); } finally { setLoading(false); }
   };
 
-  const inp = "w-full px-3.5 py-2.5 rounded-lg border border-[#d5cce6] bg-white/80 text-sm text-[#2d2440] outline-none focus:border-[#7c5cbf] focus:ring-1 focus:ring-[#7c5cbf]/30 transition-all";
-  const lbl = "block mb-1.5 text-[13px] font-semibold text-[#5a378c]";
+  const inp = "w-full px-3.5 py-2.5 rounded-lg border border-[#dcd7cc] bg-[#fdfaf6]/80 text-sm text-[#3d2b1f] outline-none focus:border-[#5a5a40] focus:ring-1 focus:ring-[#5a5a40]/30 transition-all";
+  const lbl = "block mb-1.5 text-[13px] font-semibold text-[#5a5a40]";
 
   return (
-    <main className="min-h-screen flex flex-col bg-linear-to-b from-[#9b7fd4] to-[#7a5fb0]">
+    <main className="min-h-screen flex flex-col bg-linear-to-b from-[#f9f6f0] to-[#f2ede4]">
       <Navbar />
       <div className="max-w-2xl mx-auto w-full px-4 py-8 md:py-12">
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 md:p-8 shadow-xl">
+        <div className="bg-[#fdfaf6]/90 backdrop-blur-sm rounded-2xl p-6 md:p-8 shadow-xl border border-[#e5e0d5]">
           <div className="flex items-center gap-3 mb-2">
-            <BookPlus className="w-7 h-7 text-[#7c5cbf]" />
-            <h1 className="text-3xl font-bold text-[#2d2440]">Gửi Tác Phẩm</h1>
+            <BookPlus className="w-7 h-7 text-[#5a5a40]" />
+            <h1 className="text-3xl font-bold text-[#3d2b1f]">Gửi Tác Phẩm</h1>
           </div>
-          <p className="mb-8 text-sm text-[#8a7fa0]" style={{ fontFamily: "'Inter',sans-serif" }}>
+          <p className="mb-8 text-sm text-[#8e8a7d]" style={{ fontFamily: "'Inter',sans-serif" }}>
             Gửi truyện/sách digital của bạn. Sau khi admin duyệt, tác phẩm sẽ xuất hiện tại Phòng Trưng Bày.
           </p>
           <form onSubmit={handleSubmit} className="space-y-5" style={{ fontFamily: "'Inter',sans-serif" }}>
@@ -62,11 +62,11 @@ export default function SubmitPage() {
             <div><label className={lbl}>Mô tả ngắn</label><textarea value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Tóm tắt..." rows={3} className={`${inp} resize-y`} /></div>
             <div>
               <label className={lbl}>Nội dung các trang *</label>
-              <p className="text-xs mb-2 text-[#8a7fa0]">Phân tách từng trang bằng <code className="bg-[#ede7f6] px-1.5 py-0.5 rounded text-[#7c5cbf]">---</code></p>
+              <p className="text-xs mb-2 text-[#8e8a7d]">Phân tách từng trang bằng <code className="bg-[#f2ede4] px-1.5 py-0.5 rounded text-[#5a5a40]">---</code></p>
               <textarea value={form.pagesText} onChange={(e) => set("pagesText", e.target.value)} placeholder={"Trang 1...\n---\nTrang 2..."} rows={10} className={`${inp} resize-y min-h-[200px]`} />
             </div>
             <button type="submit" disabled={loading}
-              className="w-full py-3 rounded-full bg-[#7c5cbf] text-white font-semibold text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#6a4daa] disabled:opacity-50 transition-colors shadow-lg">
+              className="w-full py-3 rounded-full bg-[#5a5a40] text-[#fdfaf6] font-semibold text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#4a4a34] disabled:opacity-50 transition-colors shadow-lg">
               <Send className="w-4 h-4" />{loading ? "Đang gửi..." : "Gửi Tác Phẩm"}
             </button>
           </form>

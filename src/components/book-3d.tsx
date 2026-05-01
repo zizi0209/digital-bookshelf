@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-const COLORS = ["bg-[#7d6b5d]", "bg-[#5a5a40]", "bg-[#944e4e]", "bg-[#4e6b94]", "bg-[#8a7d6b]"];
+const COLORS = ["bg-[#7d6b5d]", "bg-[#5a5a40]", "bg-[#944e4e]", "bg-[#6b5a48]", "bg-[#8a7d6b]"];
 
 interface Book3DProps {
   title: string;
@@ -26,7 +26,7 @@ export function Book3D({ title, author, coverUrl, onClick, className = "" }: Boo
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
       >
         {/* Front Cover */}
-        <div className={`absolute inset-0 backface-hidden shadow-lg border border-black/10 rounded-r-md overflow-hidden flex flex-col items-center justify-center text-center p-4 ${!coverUrl ? `${fallback} text-[#fdfaf6]` : ""}`}>
+        <div className={`absolute inset-0 backface-hidden shadow-lg border border-[#3d2b1f]/10 rounded-r-md overflow-hidden flex flex-col items-center justify-center text-center p-4 ${!coverUrl ? `${fallback} text-[#fdfaf6]` : ""}`}>
           {coverUrl ? (
             <Image src={coverUrl} alt={title} fill className="object-cover" referrerPolicy="no-referrer" />
           ) : (
@@ -36,12 +36,12 @@ export function Book3D({ title, author, coverUrl, onClick, className = "" }: Boo
             </>
           )}
           {/* Lighting overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-white/10 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#3d2b1f]/15 via-transparent to-[#fdfaf6]/10 pointer-events-none" />
         </div>
 
         {/* Spine */}
-        <div className={`absolute top-0 bottom-0 left-0 w-4 origin-left -rotate-y-90 rounded-l-sm border-l-2 border-black/20 ${!coverUrl ? fallback : "bg-[#c9bfa9]"}`}>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-transparent pointer-events-none" />
+        <div className={`absolute top-0 bottom-0 left-0 w-4 origin-left -rotate-y-90 rounded-l-sm border-l-2 border-[#3d2b1f]/15 ${!coverUrl ? fallback : "bg-[#c9bfa9]"}`}>
+          <div className="absolute inset-0 bg-gradient-to-b from-[#3d2b1f]/10 to-transparent pointer-events-none" />
         </div>
 
         {/* Pages Edge */}
