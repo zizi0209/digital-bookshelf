@@ -9,7 +9,6 @@ const links = [
   { href: "/", label: "Kệ Sách" },
   { href: "/gallery", label: "Phòng Trưng Bày" },
   { href: "/submit", label: "Gửi Tác Phẩm" },
-  { href: "/admin", label: "Quản Trị" },
 ];
 
 export function Navbar() {
