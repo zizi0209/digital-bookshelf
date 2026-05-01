@@ -1,6 +1,36 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => ctx.storage.generateUploadUrl(),
+});
+
+export const getFileUrl = query({
+  args: { storageId: v.string() },
+  handler: async (ctx, { storageId }) => ctx.storage.getUrl(storageId),
+});
+
+export const create = mutation({
+  args: {
+    title: v.string(),
+    description: v.string(),
+    genre: v.string(),
+    coverUrl: v.optional(v.string()),
+    fileStorageId: v.optional(v.string()),
+    fileType: v.optional(v.string()),
+    fileName: v.optional(v.string()),
+    isFeatured: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) =>
+    ctx.db.insert("books", { ...args, pages: [], createdAt: Date.now() }),
+});
+
+export const remove = mutation({
+  args: { id: v.id("books") },
+  handler: async (ctx, { id }) => ctx.db.delete(id),
+});
+
 export const list = query({
   args: { genre: v.optional(v.string()) },
   handler: async (ctx, args) => {

@@ -9,6 +9,9 @@ export default defineSchema({
     genre: v.string(),
     coverUrl: v.optional(v.string()),
     pages: v.array(v.string()),
+    fileStorageId: v.optional(v.string()),
+    fileType: v.optional(v.string()), // "pdf" | "epub"
+    fileName: v.optional(v.string()),
     isFeatured: v.optional(v.boolean()),
     createdAt: v.number(),
   }).index("by_genre", ["genre"]),
