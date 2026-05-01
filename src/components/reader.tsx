@@ -12,7 +12,7 @@ function usePageFlipSound() {
     try {
       if (!ctxRef.current) ctxRef.current = new AudioContext();
       const ctx = ctxRef.current;
-      if (ctx.state === "suspended") ctx.resume();
+      if (ctx.state === "suspended") void ctx.resume();
       const dur = 0.35;
       const len = ctx.sampleRate * dur;
       const buf = ctx.createBuffer(1, len, ctx.sampleRate);
