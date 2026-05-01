@@ -21,7 +21,10 @@ export default defineSchema({
     description: v.string(),
     genre: v.string(),
     coverUrl: v.optional(v.string()),
-    pages: v.array(v.string()),
+    pages: v.optional(v.array(v.string())),
+    fileStorageId: v.optional(v.string()),
+    fileType: v.optional(v.string()), // "pdf" | "epub"
+    fileName: v.optional(v.string()),
     status: v.string(), // "pending" | "approved" | "rejected"
     createdAt: v.number(),
   })

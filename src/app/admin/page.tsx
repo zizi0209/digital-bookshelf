@@ -11,7 +11,8 @@ import type { Id } from "../../../convex/_generated/dataModel";
 
 type GalleryItem = {
   _id: Id<"gallery">; title: string; authorName: string; authorEmail: string;
-  description: string; genre: string; coverUrl?: string; pages: string[];
+  description: string; genre: string; coverUrl?: string; pages?: string[];
+  fileStorageId?: string; fileType?: string; fileName?: string;
   status: string; createdAt: number;
 };
 
@@ -69,7 +70,7 @@ export default function AdminPage() {
                         <span className="text-[11px] px-2.5 py-0.5 rounded-full font-semibold shrink-0" style={{ background: s.bg, color: s.text, fontFamily: "'Inter',sans-serif" }}>{s.label}</span>
                       </div>
                       <p className="text-sm text-[#8e8a7d] truncate" style={{ fontFamily: "'Inter',sans-serif" }}>
-                        bởi <strong className="text-[#5c544d]">{item.authorName}</strong> · {item.authorEmail} · {item.genre} · {item.pages.length} trang
+                        bởi <strong className="text-[#5c544d]">{item.authorName}</strong> · {item.authorEmail} · {item.genre}{item.fileName ? ` · ${item.fileName}` : item.pages?.length ? ` · ${item.pages.length} trang` : ""}
                       </p>
                       {item.description && <p className="text-sm mt-2 line-clamp-2 text-[#8e8a7d]/70">{item.description}</p>}
                     </div>
@@ -101,7 +102,7 @@ export default function AdminPage() {
       </div>
 
       <AnimatePresence>
-        {preview && <Reader title={preview.title} author={preview.authorName} genre={preview.genre} coverUrl={preview.coverUrl} pages={preview.pages} onClose={() => setPreview(null)} />}
+        {preview && <Reader title={preview.title} author={preview.authorName} genre={preview.genre} coverUrl={preview.coverUrl} pages={preview.pages ?? []} onClose={() => setPreview(null)} />}
       </AnimatePresence>
     </main>
   );

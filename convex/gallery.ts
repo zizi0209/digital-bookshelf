@@ -30,6 +30,16 @@ export const get = query({
   handler: async (ctx, args) => ctx.db.get(args.id),
 });
 
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => ctx.storage.generateUploadUrl(),
+});
+
+export const getFileUrl = query({
+  args: { storageId: v.string() },
+  handler: async (ctx, { storageId }) => ctx.storage.getUrl(storageId),
+});
+
 export const submit = mutation({
   args: {
     title: v.string(),
@@ -37,8 +47,9 @@ export const submit = mutation({
     authorEmail: v.string(),
     description: v.string(),
     genre: v.string(),
-    coverUrl: v.optional(v.string()),
-    pages: v.array(v.string()),
+    fileStorageId: v.optional(v.string()),
+    fileType: v.optional(v.string()),
+    fileName: v.optional(v.string()),
   },
   handler: async (ctx, args) =>
     ctx.db.insert("gallery", { ...args, status: "pending", createdAt: Date.now() }),
