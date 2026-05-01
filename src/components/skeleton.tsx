@@ -1,10 +1,9 @@
-export function BookSkeleton({ count = 6 }: { count?: number }) {
+export function BookSkeleton({ count = 7 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-6 gap-y-12 max-w-7xl mx-auto">
+    <div className="flex flex-wrap gap-8 justify-center max-w-7xl mx-auto py-8">
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="flex flex-col items-center">
-          <div className="w-32 md:w-40 h-48 md:h-60 bg-[#e5e0d5] animate-pulse-soft rounded-r-sm border border-[#dcd7cc]" />
-          <div className="h-4 bg-[#e5e0d5] mt-2 w-24 rounded animate-pulse-soft" />
+          <div className="w-[120px] h-[170px] bg-white/10 animate-pulse-soft rounded-md" />
         </div>
       ))}
     </div>

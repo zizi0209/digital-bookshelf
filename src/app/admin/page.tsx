@@ -32,30 +32,28 @@ export default function AdminPage() {
   const items = tab === "pending" ? pending : all;
 
   return (
-    <main className="min-h-screen flex flex-col bg-[#f2ede4]">
+    <main className="min-h-screen flex flex-col bg-linear-to-b from-[#9b7fd4] to-[#7a5fb0]">
       <Navbar />
       <div className="max-w-5xl mx-auto w-full px-4 py-8">
         <div className="flex items-center gap-3 mb-6">
-          <Shield className="w-7 h-7 text-[#5a5a40]" />
-          <h1 className="text-3xl font-bold text-[#5a5a40]">Quản Trị</h1>
+          <Shield className="w-7 h-7 text-white" />
+          <h1 className="text-3xl font-bold text-white">Quản Trị</h1>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-4 mb-6" style={{ fontFamily: "'Inter',sans-serif" }}>
+        <div className="flex gap-3 mb-6" style={{ fontFamily: "'Inter',sans-serif" }}>
           {(["pending", "all"] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)}
-              className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${tab === t ? "bg-[#5a5a40] text-white" : "bg-[#f9f6f0] text-[#8e8a7d] border border-[#e5e0d5]"}`}>
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${tab === t ? "bg-white text-[#5a378c] shadow-md" : "bg-white/15 text-white/70 hover:bg-white/25"}`}>
               {t === "pending" ? <><Clock className="w-4 h-4 inline mr-1" />Chờ duyệt ({pending?.length ?? 0})</> : <><BookCheck className="w-4 h-4 inline mr-1" />Tất cả ({all?.length ?? 0})</>}
             </button>
           ))}
         </div>
 
-        {/* List */}
         {items === undefined ? (
-          <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-32 rounded-xl bg-[#e5e0d5] animate-pulse-soft" />)}</div>
+          <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-32 rounded-xl bg-white/10 animate-pulse-soft" />)}</div>
         ) : items.length === 0 ? (
-          <div className="text-center py-16 text-[#8e8a7d]">
-            <BookX className="w-12 h-12 mx-auto mb-4 opacity-20" />
+          <div className="text-center py-16 text-white/60">
+            <BookX className="w-12 h-12 mx-auto mb-4 opacity-30" />
             <p>{tab === "pending" ? "Không có tác phẩm nào đang chờ duyệt." : "Chưa có tác phẩm nào."}</p>
           </div>
         ) : (
@@ -63,20 +61,20 @@ export default function AdminPage() {
             {items.map((item) => {
               const s = STATUS_COLORS[item.status] || STATUS_COLORS.pending;
               return (
-                <div key={item._id} className="bg-[#fdfaf6] border border-[#e5e0d5] rounded-xl p-5 hover:shadow-md transition-shadow">
+                <div key={item._id} className="bg-white/90 backdrop-blur-sm border border-white/20 rounded-xl p-5 hover:shadow-lg transition-shadow">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-bold text-[#5a5a40] truncate">{item.title}</h3>
+                        <h3 className="text-lg font-bold text-[#2d2440] truncate">{item.title}</h3>
                         <span className="text-xs px-2 py-0.5 rounded-full font-semibold shrink-0" style={{ background: s.bg, color: s.text, fontFamily: "'Inter',sans-serif" }}>{s.label}</span>
                       </div>
-                      <p className="text-sm text-[#8e8a7d] truncate" style={{ fontFamily: "'Inter',sans-serif" }}>
+                      <p className="text-sm text-[#8a7fa0] truncate" style={{ fontFamily: "'Inter',sans-serif" }}>
                         bởi <strong>{item.authorName}</strong> · {item.authorEmail} · {item.genre} · {item.pages.length} trang
                       </p>
-                      {item.description && <p className="text-sm mt-1 line-clamp-2 text-[#3d2b1f]">{item.description}</p>}
+                      {item.description && <p className="text-sm mt-1 line-clamp-2 text-[#4a3d60]">{item.description}</p>}
                     </div>
                     <div className="flex items-center gap-2 shrink-0" style={{ fontFamily: "'Inter',sans-serif" }}>
-                      <button className="px-3 py-1.5 rounded-lg text-[13px] font-semibold bg-[#f9f6f0] text-[#5a5a40] inline-flex items-center gap-1.5 hover:bg-[#f2ede4] transition-colors" onClick={() => setPreview(item as GalleryItem)}>
+                      <button className="px-3 py-1.5 rounded-lg text-[13px] font-semibold bg-[#ede7f6] text-[#5a378c] inline-flex items-center gap-1.5 hover:bg-[#d5cce6] transition-colors" onClick={() => setPreview(item as GalleryItem)}>
                         <Eye className="w-4 h-4" />Xem
                       </button>
                       {item.status !== "approved" && (
@@ -89,7 +87,7 @@ export default function AdminPage() {
                           <XCircle className="w-4 h-4" />Từ chối
                         </button>
                       )}
-                      <button className="px-3 py-1.5 rounded-lg text-[13px] font-semibold border border-[#944e4e] text-[#944e4e] inline-flex items-center gap-1.5 hover:bg-[#944e4e] hover:text-white transition-colors"
+                      <button className="px-3 py-1.5 rounded-lg text-[13px] font-semibold border border-[#c0392b] text-[#c0392b] inline-flex items-center gap-1.5 hover:bg-[#c0392b] hover:text-white transition-colors"
                         onClick={async () => { if (confirm("Xóa vĩnh viễn?")) { await remove({ id: item._id }); toast.success("Đã xóa."); } }}>
                         <Trash2 className="w-4 h-4" />
                       </button>

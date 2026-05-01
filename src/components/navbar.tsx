@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { BookOpen, Menu, X, Search } from "lucide-react";
+import { BookOpen, Menu, X } from "lucide-react";
 
 const links = [
   { href: "/", label: "Kệ Sách" },
@@ -15,42 +15,31 @@ const links = [
 export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
 
   return (
-    <header className="sticky top-0 z-30 bg-[#fdfaf6] border-b border-[#e5e0d5] shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tight text-[#5a5a40]">
-            <BookOpen className="w-6 h-6" />
-            Tsuki<span className="font-light">zoe</span>
-          </Link>
-          <nav className="hidden md:flex gap-6 text-sm uppercase tracking-widest font-medium opacity-70" style={{ fontFamily: "'Inter',sans-serif" }}>
-            {links.map((l) => (
-              <Link key={l.href} href={l.href}
-                className={`transition-colors ${pathname === l.href ? "border-b border-[#5a5a40] text-[#5a5a40]" : "hover:text-[#5a5a40]"}`}>
-                {l.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex relative">
-            <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-[#8e8a7d]" />
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm kiếm..."
-              className="bg-[#f5f0e6] border border-[#dcd7cc] rounded-full pl-10 pr-4 py-1.5 text-sm w-48 lg:w-64 outline-none focus:border-[#5a5a40] transition-colors"
-              style={{ fontFamily: "'Inter',sans-serif" }} />
-          </div>
-          <button className="md:hidden p-2 text-[#5a5a40]" onClick={() => setOpen(!open)}>
-            {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
+    <header className="sticky top-0 z-30 bg-[#5a378c]/90 backdrop-blur-md border-b border-white/10 shadow-lg">
+      <div className="max-w-full mx-auto px-4 sm:px-8 h-14 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2 text-xl font-bold tracking-tight text-white">
+          <BookOpen className="w-5 h-5" />
+          Tsuki<span className="font-light text-white/70">zoe</span>
+        </Link>
+        <nav className="hidden md:flex gap-6 text-xs uppercase tracking-widest font-medium" style={{ fontFamily: "'Inter',sans-serif" }}>
+          {links.map((l) => (
+            <Link key={l.href} href={l.href}
+              className={`transition-colors py-1 ${pathname === l.href ? "text-white border-b border-white" : "text-white/50 hover:text-white/80"}`}>
+              {l.label}
+            </Link>
+          ))}
+        </nav>
+        <button className="md:hidden p-2 text-white" onClick={() => setOpen(!open)}>
+          {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
       </div>
       {open && (
-        <nav className="md:hidden border-t border-[#e5e0d5] px-4 py-4 flex flex-col gap-3 bg-[#f9f6f0]">
+        <nav className="md:hidden border-t border-white/10 px-4 py-3 flex flex-col gap-2 bg-[#5a378c]/95 backdrop-blur-md">
           {links.map((l) => (
             <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
-              className={`text-sm uppercase tracking-widest py-2 ${pathname === l.href ? "text-[#5a5a40] font-semibold" : "text-[#8e8a7d]"}`}
+              className={`text-xs uppercase tracking-widest py-2 ${pathname === l.href ? "text-white font-semibold" : "text-white/50"}`}
               style={{ fontFamily: "'Inter',sans-serif" }}>
               {l.label}
             </Link>

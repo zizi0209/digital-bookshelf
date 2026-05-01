@@ -2,109 +2,67 @@
 
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useMemo, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { Navbar } from "@/components/navbar";
-import { Book3D } from "@/components/book-3d";
+import { ShelfBook, BookshelfGrid } from "@/components/book-shelf";
+import { ShelfHeader } from "@/components/shelf-header";
 import { Reader } from "@/components/reader";
 import { BookSkeleton } from "@/components/skeleton";
-import { Library, Sparkles } from "lucide-react";
-
-const GENRES = ["all", "fantasy", "romance", "mystery", "slice_of_life", "horror"] as const;
-const GENRE_LABELS: Record<string, string> = {
-  all: "Tất Cả", fantasy: "Fantasy", romance: "Romance",
-  mystery: "Mystery", slice_of_life: "Slice of Life", horror: "Horror",
-};
+import { Library } from "lucide-react";
 
 type BookDoc = {
-  _id: string;
-  title: string;
-  description: string;
-  genre: string;
-  coverUrl?: string;
-  pages: string[];
-  isFeatured?: boolean;
-  createdAt: number;
+  _id: string; title: string; description: string; genre: string;
+  coverUrl?: string; pages: string[]; isFeatured?: boolean; createdAt: number;
 };
 
+type SortMode = "name" | "date";
+
 export default function Home() {
-  const [genre, setGenre] = useState("all");
   const [selected, setSelected] = useState<BookDoc | null>(null);
-  const books = useQuery(api.books.list, genre === "all" ? {} : { genre });
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<SortMode>("date");
+  const books = useQuery(api.books.list, {});
   const seed = useMutation(api.books.seed);
+
+  const filtered = useMemo(() => {
+    if (!books) return undefined;
+    let list = [...books];
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter((b) => b.title.toLowerCase().includes(q) || b.genre.toLowerCase().includes(q));
+    }
+    list.sort((a, b) => sort === "name" ? a.title.localeCompare(b.title) : b.createdAt - a.createdAt);
+    return list;
+  }, [books, search, sort]);
 
   return (
     <main className="min-h-screen flex flex-col">
       <Navbar />
+      <ShelfHeader title="Kệ Sách Của Tsukizoe" search={search} onSearchChange={setSearch} sort={sort} onSortChange={setSort} />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#3d2b1f] via-[#5a5a40] to-[#4e6b94]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-16 md:py-24 text-white relative z-10">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-            <p className="text-sm uppercase tracking-widest mb-3 opacity-70" style={{ fontFamily: "'Inter',sans-serif" }}>
-              <Sparkles className="w-4 h-4 inline mr-1" /> Tác giả Tsukizoe
-            </p>
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">Digital Bookshelf</h1>
-            <p className="text-lg md:text-xl opacity-80 max-w-2xl leading-relaxed">
-              Chào mừng bạn đến với kệ sách số của Zoe. Nơi đây lưu giữ những câu chuyện được viết bằng trái tim — mời bạn mở từng trang và cảm nhận.
-            </p>
-          </motion.div>
-        </div>
-        <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-white opacity-10" />
-        <div className="absolute -bottom-10 -left-10 w-48 h-48 rounded-full bg-white opacity-10" />
-      </section>
-
-      {/* Category Bar */}
-      <div className="h-12 w-full px-4 sm:px-8 flex items-center gap-4 sm:gap-6 bg-[#f9f6f0] border-b border-[#e5e0d5] overflow-x-auto whitespace-nowrap">
-        <span className="text-xs font-bold uppercase text-[#8e8a7d]" style={{ fontFamily: "'Inter',sans-serif" }}>Thể loại:</span>
-        {GENRES.map((g) => (
-          <button key={g} onClick={() => setGenre(g)}
-            className={`text-sm italic hover:text-[#5a5a40] transition-colors capitalize ${genre === g ? "text-[#5a5a40] font-bold underline underline-offset-4" : "text-[#8e8a7d]"}`}>
-            {GENRE_LABELS[g] || g}
-          </button>
-        ))}
-      </div>
-
-      {/* Bookshelf */}
-      <section className="flex-1 relative py-8 px-4 sm:px-12 bg-[#f2ede4]">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[rgba(0,0,0,0.02)] to-transparent pointer-events-none" />
-
-        {books === undefined ? (
-          <BookSkeleton />
-        ) : books.length === 0 ? (
-          <div className="text-center py-20 text-[#8e8a7d] flex flex-col items-center max-w-7xl mx-auto">
-            <Library className="w-12 h-12 mb-4 opacity-20" />
-            <p className="text-lg">Không tìm thấy tác phẩm nào.</p>
-            <p className="text-sm">Thử thay đổi từ khóa hoặc tải lên truyện mới.</p>
+      {filtered === undefined ? (
+        <div className="shelf-wall flex-1 p-8"><BookSkeleton /></div>
+      ) : filtered.length === 0 ? (
+        <div className="shelf-wall flex-1 flex items-center justify-center">
+          <div className="text-center py-20 text-white/70 flex flex-col items-center">
+            <Library className="w-12 h-12 mb-4 opacity-30" />
+            <p className="text-lg font-serif">Kệ sách đang trống.</p>
+            <p className="text-sm opacity-60 mt-1" style={{ fontFamily: "'Inter',sans-serif" }}>Chưa có tác phẩm nào.</p>
             <button onClick={() => seed()}
-              className="mt-6 px-6 py-2 rounded-full text-sm border border-[#5a5a40] text-[#5a5a40] hover:bg-[#5a5a40] hover:text-white transition-colors"
+              className="mt-6 px-6 py-2 rounded-lg text-sm border border-white/25 text-white/70 hover:bg-white/10 transition-colors"
               style={{ fontFamily: "'Inter',sans-serif" }}>
-              Tạo Dữ Liệu Sách Mẫu
+              Tạo Dữ Liệu Mẫu
             </button>
           </div>
-        ) : (
-          <div className="relative max-w-7xl mx-auto h-full">
-            {/* Shelf lines background */}
-            <div className="absolute inset-0 pointer-events-none shelf-lines" style={{ zIndex: -1 }} />
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-6 gap-y-0 pb-16">
-              <AnimatePresence mode="popLayout">
-                {books.map((book, i) => (
-                  <motion.div key={book._id}
-                    layoutId={`book-${book._id}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.3, delay: i * 0.05 }}
-                    className="flex justify-center mb-6 h-64 items-end drop-shadow-md z-10">
-                    <Book3D title={book.title} author="Tsukizoe" coverUrl={book.coverUrl}
-                      onClick={() => setSelected(book as unknown as BookDoc)} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </div>
-        )}
-      </section>
+        </div>
+      ) : (
+        <BookshelfGrid items={filtered as BookDoc[]} perRow={7}
+          renderBook={(book, i) => (
+            <ShelfBook key={book._id} title={book.title} author="Tsukizoe" coverUrl={book.coverUrl}
+              onClick={() => setSelected(book as unknown as BookDoc)} delay={i * 40} />
+          )} />
+      )}
 
       <AnimatePresence>
         {selected && (

@@ -2,89 +2,63 @@
 
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useMemo, useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { Navbar } from "@/components/navbar";
-import { Book3D } from "@/components/book-3d";
+import { ShelfBook, BookshelfGrid } from "@/components/book-shelf";
+import { ShelfHeader } from "@/components/shelf-header";
 import { Reader } from "@/components/reader";
 import { BookSkeleton } from "@/components/skeleton";
-import { Users, Filter } from "lucide-react";
-
-const GENRES = ["all", "fantasy", "romance", "mystery", "slice_of_life", "horror"] as const;
-const GENRE_LABELS: Record<string, string> = {
-  all: "Tất Cả", fantasy: "Fantasy", romance: "Romance",
-  mystery: "Mystery", slice_of_life: "Slice of Life", horror: "Horror",
-};
+import { Users } from "lucide-react";
 
 type GalleryDoc = {
   _id: string; title: string; authorName: string; description: string;
   genre: string; coverUrl?: string; pages: string[]; status: string; createdAt: number;
 };
 
+type SortMode = "name" | "date";
+
 export default function GalleryPage() {
-  const [genre, setGenre] = useState("all");
   const [selected, setSelected] = useState<GalleryDoc | null>(null);
-  const items = useQuery(api.gallery.listApproved, genre === "all" ? {} : { genre });
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<SortMode>("date");
+  const items = useQuery(api.gallery.listApproved, {});
+
+  const filtered = useMemo(() => {
+    if (!items) return undefined;
+    let list = [...items];
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter((b) => b.title.toLowerCase().includes(q) || b.authorName.toLowerCase().includes(q));
+    }
+    list.sort((a, b) => sort === "name" ? a.title.localeCompare(b.title) : b.createdAt - a.createdAt);
+    return list;
+  }, [items, search, sort]);
 
   return (
     <main className="min-h-screen flex flex-col">
       <Navbar />
+      <ShelfHeader title="Phòng Trưng Bày Cộng Đồng" search={search} onSearchChange={setSearch} sort={sort} onSortChange={setSort} />
 
-      {/* Header */}
-      <div className="bg-[#f9f6f0] border-b border-[#e5e0d5]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8 md:py-12 flex flex-col gap-4">
-          <div className="flex items-center gap-3">
-            <Users className="w-8 h-8 text-[#5a5a40]" />
-            <h1 className="text-3xl md:text-5xl font-bold text-[#5a5a40]">Phòng Trưng Bày</h1>
+      {filtered === undefined ? (
+        <div className="shelf-wall flex-1 p-8"><BookSkeleton /></div>
+      ) : filtered.length === 0 ? (
+        <div className="shelf-wall flex-1 flex items-center justify-center">
+          <div className="text-center py-20 text-white/70 flex flex-col items-center">
+            <Users className="w-12 h-12 mb-4 opacity-30" />
+            <p className="text-lg font-serif">Phòng trưng bày đang trống.</p>
+            <p className="text-sm opacity-60 mt-1" style={{ fontFamily: "'Inter',sans-serif" }}>
+              Hãy gửi tác phẩm qua trang &quot;Gửi Tác Phẩm&quot;!
+            </p>
           </div>
-          <p className="max-w-2xl text-sm md:text-base text-[#8e8a7d]" style={{ fontFamily: "'Inter',sans-serif" }}>
-            Tác phẩm do cộng đồng đọc giả sáng tác, đã được duyệt bởi admin. Mỗi câu chuyện là một thế giới riêng — hãy khám phá!
-          </p>
         </div>
-      </div>
-
-      {/* Genre filter */}
-      <div className="h-12 w-full px-4 sm:px-8 flex items-center gap-4 sm:gap-6 bg-[#fdfaf6] border-b border-[#e5e0d5] overflow-x-auto whitespace-nowrap">
-        <span className="text-xs font-bold uppercase text-[#8e8a7d]" style={{ fontFamily: "'Inter',sans-serif" }}>
-          <Filter className="w-3 h-3 inline mr-1" />Lọc:
-        </span>
-        {GENRES.map((g) => (
-          <button key={g} onClick={() => setGenre(g)}
-            className={`text-sm italic transition-colors capitalize ${genre === g ? "text-[#5a5a40] font-bold underline underline-offset-4" : "text-[#8e8a7d] hover:text-[#5a5a40]"}`}>
-            {GENRE_LABELS[g] || g}
-          </button>
-        ))}
-      </div>
-
-      {/* Grid */}
-      <section className="flex-1 py-8 px-4 sm:px-12 bg-[#f2ede4]">
-        {items === undefined ? (
-          <BookSkeleton />
-        ) : items.length === 0 ? (
-          <div className="text-center py-20 flex flex-col items-center text-[#8e8a7d]">
-            <Users className="w-12 h-12 mb-4 opacity-20" />
-            <p className="text-lg">Chưa có tác phẩm nào được duyệt.</p>
-            <p className="text-sm mt-2">Hãy gửi tác phẩm của bạn qua trang &quot;Gửi Tác Phẩm&quot;!</p>
-          </div>
-        ) : (
-          <div className="max-w-7xl mx-auto">
-            <div className="relative shelf-lines">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-6 gap-y-0 pb-16">
-                <AnimatePresence mode="popLayout">
-                  {items.map((item, i) => (
-                    <motion.div key={item._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 0.3, delay: i * 0.05 }}
-                      className="flex justify-center mb-6 h-64 items-end drop-shadow-md z-10">
-                      <Book3D title={item.title} author={item.authorName} coverUrl={item.coverUrl}
-                        onClick={() => setSelected(item as unknown as GalleryDoc)} />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
-        )}
-      </section>
+      ) : (
+        <BookshelfGrid items={filtered as GalleryDoc[]} perRow={7}
+          renderBook={(item, i) => (
+            <ShelfBook key={item._id} title={item.title} author={item.authorName} coverUrl={item.coverUrl}
+              onClick={() => setSelected(item as unknown as GalleryDoc)} delay={i * 40} />
+          )} />
+      )}
 
       <AnimatePresence>
         {selected && (
