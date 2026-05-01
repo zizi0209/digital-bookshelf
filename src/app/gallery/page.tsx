@@ -53,7 +53,7 @@ export default function GalleryPage() {
           </div>
         </div>
       ) : (
-        <BookshelfGrid items={filtered as GalleryDoc[]} perRow={7}
+        <BookshelfGrid items={filtered as GalleryDoc[]} perRow={5}
           renderBook={(item, i) => (
             <ShelfBook key={item._id} title={item.title} author={item.authorName} coverUrl={item.coverUrl}
               onClick={() => setSelected(item as unknown as GalleryDoc)} delay={i * 40} />

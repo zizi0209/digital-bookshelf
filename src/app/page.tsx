@@ -57,7 +57,7 @@ export default function Home() {
           </div>
         </div>
       ) : (
-        <BookshelfGrid items={filtered as BookDoc[]} perRow={7}
+        <BookshelfGrid items={filtered as BookDoc[]} perRow={5}
           renderBook={(book, i) => (
             <ShelfBook key={book._id} title={book.title} author="Tsukizoe" coverUrl={book.coverUrl}
               onClick={() => setSelected(book as unknown as BookDoc)} delay={i * 40} />
