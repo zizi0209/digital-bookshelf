@@ -18,7 +18,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: #fdfaf6;
+  background: #2a2520;
   color: #3d2b1f;
   font-family: 'Cormorant Garamond', Georgia, serif;
   min-height: 100vh;
@@ -37,14 +37,37 @@ body {
 .-rotate-y-90 { transform: rotateY(-90deg); }
 .rotate-y-90 { transform: rotateY(90deg); }
 
+/* ===== Immersive Room Wrapper ===== */
+.room-wrapper {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(253,250,246,0.06) 0%, transparent 60%),
+    linear-gradient(180deg, #3a322c 0%, #2a2520 40%, #1f1b17 100%);
+  min-height: 100vh;
+  position: relative;
+}
+.room-wrapper::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(90,90,64,0.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 60%, rgba(148,78,78,0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
 /* ===== Vintage Bookshelf ===== */
 
-/* Warm parchment wall */
+/* Warm parchment wall with depth */
 .shelf-wall {
-  background: linear-gradient(180deg, #f9f6f0 0%, #f2ede4 40%, #ece6da 100%);
+  background:
+    linear-gradient(180deg,
+      rgba(249,246,240,0.03) 0%,
+      rgba(242,237,228,0.02) 40%,
+      transparent 100%);
   position: relative;
-  min-height: 300px;
-  padding: 0 32px;
+  min-height: 340px;
+  padding: 0 clamp(24px, 4vw, 80px);
 }
 
 /* Each shelf row */
@@ -54,43 +77,49 @@ body {
   align-items: flex-end;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 12px;
-  padding: 24px 16px 0;
-  min-height: 260px;
+  gap: 18px;
+  padding: 32px clamp(16px, 3vw, 48px) 0;
+  min-height: 280px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* Wooden shelf plank */
+/* Wooden shelf plank — richer, deeper wood */
 .shelf-plank {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 18px;
-  background: linear-gradient(180deg, #e5e0d5 0%, #dcd7cc 50%, #d0c8b8 100%);
-  border-top: 1px solid #f2ede4;
-  box-shadow: 0 4px 12px rgba(61,43,31,0.12), 0 1px 0 #f9f6f0 inset;
+  height: 20px;
+  background: linear-gradient(180deg, #8b7355 0%, #7a6245 30%, #6b5438 100%);
+  border-top: 1px solid rgba(253,250,246,0.12);
+  box-shadow:
+    0 4px 16px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.08);
   z-index: 15;
 }
 .shelf-plank::after {
   content: "";
   position: absolute;
-  bottom: -10px;
+  bottom: -12px;
   left: 0;
   right: 0;
-  height: 10px;
-  background: linear-gradient(180deg, #c9bfa9 0%, #b8a882 100%);
-  box-shadow: 0 4px 8px rgba(61,43,31,0.1);
+  height: 12px;
+  background: linear-gradient(180deg, #5a4632 0%, #4a3828 100%);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
 }
 
 /* Shadow behind books */
 .shelf-row::before {
   content: "";
   position: absolute;
-  bottom: 18px;
+  bottom: 20px;
   left: 0;
   right: 0;
-  height: 60%;
-  background: linear-gradient(180deg, rgba(61,43,31,0.05) 0%, transparent 100%);
+  height: 70%;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.15) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(0,0,0,0.08) 0%, transparent 100%);
   z-index: 0;
   pointer-events: none;
 }
@@ -100,115 +129,137 @@ body {
   position: relative;
   z-index: 10;
   cursor: pointer;
-  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
-  margin-bottom: 18px;
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), filter 0.3s;
+  margin-bottom: 20px;
 }
 .shelf-book:hover {
-  transform: translateY(-12px) scale(1.05);
+  transform: translateY(-14px) scale(1.06);
   z-index: 12;
+  filter: brightness(1.08);
 }
 
-/* Book cover */
+/* Book cover — slightly larger for premium feel */
 .shelf-book-cover {
-  width: 120px;
-  height: 170px;
-  border-radius: 3px 6px 6px 3px;
+  width: 130px;
+  height: 185px;
+  border-radius: 3px 8px 8px 3px;
   overflow: hidden;
   position: relative;
   background: #f9f6f0;
   box-shadow:
-    3px 3px 10px rgba(61,43,31,0.18),
-    -1px 0 4px rgba(61,43,31,0.06),
-    inset -2px 0 6px rgba(61,43,31,0.04);
+    4px 4px 14px rgba(0,0,0,0.35),
+    -1px 0 4px rgba(0,0,0,0.12),
+    inset -2px 0 8px rgba(0,0,0,0.06);
 }
 .shelf-book-cover::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(110deg, rgba(255,255,255,0.18) 0%, transparent 35%, rgba(61,43,31,0.04) 100%);
+  background: linear-gradient(110deg, rgba(255,255,255,0.22) 0%, transparent 35%, rgba(0,0,0,0.06) 100%);
   pointer-events: none;
 }
 .shelf-book-cover::before {
   content: "";
   position: absolute;
   left: 0; top: 0; bottom: 0;
-  width: 5px;
-  background: linear-gradient(90deg, rgba(61,43,31,0.15), rgba(61,43,31,0.02));
+  width: 6px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.2), rgba(0,0,0,0.03));
   z-index: 2;
 }
 
 /* Book shadow on shelf */
 .shelf-book-shadow {
   position: absolute;
-  bottom: -5px;
+  bottom: -6px;
   left: 8%;
   width: 84%;
-  height: 6px;
-  background: radial-gradient(ellipse, rgba(61,43,31,0.15) 0%, transparent 70%);
+  height: 8px;
+  background: radial-gradient(ellipse, rgba(0,0,0,0.3) 0%, transparent 70%);
   transition: all 0.3s;
 }
 .shelf-book:hover .shelf-book-shadow {
-  opacity: 0.7;
-  transform: scaleX(1.15);
+  opacity: 0.6;
+  transform: scaleX(1.2);
 }
 
 /* Book title — hidden */
 .shelf-book-title { display: none; }
 
-/* ===== Header bar (glassmorphism vintage) ===== */
+/* ===== Header bar — premium glassmorphism ===== */
 .bookshelf-header {
-  background: rgba(90,90,64,0.88);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  padding: 10px 24px;
+  background: rgba(42,37,32,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(253,250,246,0.06);
+  padding: 14px clamp(20px, 4vw, 64px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 20px;
   color: #fdfaf6;
   font-family: 'Inter', sans-serif;
 }
 
 .bookshelf-search {
-  background: rgba(253,250,246,0.1);
-  border: 1px solid rgba(253,250,246,0.2);
-  border-radius: 8px;
-  padding: 7px 12px 7px 34px;
+  background: rgba(253,250,246,0.06);
+  border: 1px solid rgba(253,250,246,0.12);
+  border-radius: 10px;
+  padding: 8px 14px 8px 36px;
   color: #fdfaf6;
   font-size: 13px;
   outline: none;
-  width: 200px;
-  transition: border-color 0.2s;
+  width: 220px;
+  transition: all 0.25s;
 }
-.bookshelf-search:focus { border-color: rgba(253,250,246,0.5); }
-.bookshelf-search::placeholder { color: rgba(253,250,246,0.4); }
+.bookshelf-search:focus {
+  border-color: rgba(253,250,246,0.35);
+  background: rgba(253,250,246,0.1);
+  box-shadow: 0 0 0 3px rgba(90,90,64,0.15);
+}
+.bookshelf-search::placeholder { color: rgba(253,250,246,0.3); }
 
 .sort-btn {
-  background: rgba(253,250,246,0.08);
-  border: 1px solid rgba(253,250,246,0.18);
-  border-radius: 8px;
-  padding: 6px 14px;
-  color: rgba(253,250,246,0.7);
+  background: rgba(253,250,246,0.05);
+  border: 1px solid rgba(253,250,246,0.1);
+  border-radius: 10px;
+  padding: 7px 16px;
+  color: rgba(253,250,246,0.5);
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s;
   font-family: 'Inter', sans-serif;
 }
 .sort-btn:hover, .sort-btn.active {
-  background: rgba(253,250,246,0.2);
+  background: rgba(253,250,246,0.15);
   color: #fdfaf6;
+  border-color: rgba(253,250,246,0.2);
+}
+
+/* ===== Ambient footer glow ===== */
+.shelf-floor {
+  height: 80px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.15) 100%);
+  position: relative;
+}
+.shelf-floor::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(253,250,246,0.06), transparent);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .shelf-book-cover { width: 95px; height: 135px; }
-  .shelf-row { padding: 18px 8px 0; min-height: 210px; gap: 8px; }
-  .shelf-wall { padding: 0 12px; }
+  .shelf-book-cover { width: 105px; height: 150px; }
+  .shelf-row { padding: 24px 12px 0; min-height: 220px; gap: 12px; }
+  .shelf-wall { padding: 0 16px; }
 }
 @media (max-width: 480px) {
-  .shelf-book-cover { width: 75px; height: 108px; }
-  .shelf-row { padding: 14px 4px 0; min-height: 175px; gap: 6px; }
-  .shelf-wall { padding: 0 4px; }
+  .shelf-book-cover { width: 80px; height: 115px; }
+  .shelf-row { padding: 18px 6px 0; min-height: 180px; gap: 8px; }
+  .shelf-wall { padding: 0 8px; }
 }
 
 /* Animations */
@@ -219,7 +270,7 @@ body {
 .animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(14px); }
+  from { opacity: 0; transform: translateY(18px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.animate-fadeInUp { animation: fadeInUp 0.4s ease-out both; }
+.animate-fadeInUp { animation: fadeInUp 0.45s ease-out both; }

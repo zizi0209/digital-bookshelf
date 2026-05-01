@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-const COLORS = ["#e8d5b0", "#d4c4a8", "#c9b896", "#ddd0b8", "#e0d4be", "#d8c8a4", "#ede2cc"];
+const COLORS = ["#6b5d50", "#5a5a40", "#7d5a5a", "#5c544d", "#8a7d6b", "#6b6b4e", "#7a6852"];
 
 interface ShelfBookProps {
   title: string;
@@ -20,11 +20,11 @@ export function ShelfBook({ title, author, coverUrl, onClick, delay = 0 }: Shelf
     <div className="shelf-book animate-fadeInUp" onClick={onClick} style={{ animationDelay: `${delay}ms` }}>
       <div className="shelf-book-cover" style={!coverUrl ? { background: fallbackColor } : undefined}>
         {coverUrl ? (
-          <Image src={coverUrl} alt={title} fill className="object-cover" referrerPolicy="no-referrer" sizes="120px" />
+          <Image src={coverUrl} alt={title} fill className="object-cover" referrerPolicy="no-referrer" sizes="130px" />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full p-3 text-center">
-            <span className="font-serif font-bold text-sm leading-tight line-clamp-3 text-[#3d2b1f]">{title}</span>
-            {author && <span className="text-[10px] mt-2 opacity-60 uppercase tracking-wide text-[#5c544d]" style={{ fontFamily: "'Inter',sans-serif" }}>{author}</span>}
+          <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+            <span className="font-serif font-bold text-sm leading-tight line-clamp-3 text-[#fdfaf6]">{title}</span>
+            {author && <span className="text-[10px] mt-2 opacity-50 uppercase tracking-wide text-[#fdfaf6]/60" style={{ fontFamily: "'Inter',sans-serif" }}>{author}</span>}
           </div>
         )}
       </div>
@@ -49,7 +49,7 @@ export function BookshelfGrid<T extends { _id: string }>({
   }
 
   return (
-    <div className="shelf-wall">
+    <div className="shelf-wall flex-1">
       {rows.map((row, ri) => (
         <div key={ri} className="shelf-row">
           {row.map((item, ci) => renderBook(item, ri * perRow + ci))}

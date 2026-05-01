@@ -36,18 +36,18 @@ export default function GalleryPage() {
   }, [items, search, sort]);
 
   return (
-    <main className="min-h-screen flex flex-col">
+    <main className="room-wrapper min-h-screen flex flex-col">
       <Navbar />
       <ShelfHeader title="Phòng Trưng Bày Cộng Đồng" search={search} onSearchChange={setSearch} sort={sort} onSortChange={setSort} />
 
       {filtered === undefined ? (
-        <div className="shelf-wall flex-1 p-8"><BookSkeleton /></div>
+        <div className="shelf-wall flex-1 px-8 py-10"><BookSkeleton /></div>
       ) : filtered.length === 0 ? (
         <div className="shelf-wall flex-1 flex items-center justify-center">
-          <div className="text-center py-20 text-[#8e8a7d] flex flex-col items-center">
-            <Users className="w-12 h-12 mb-4 opacity-30" />
-            <p className="text-lg font-serif">Phòng trưng bày đang trống.</p>
-            <p className="text-sm opacity-60 mt-1" style={{ fontFamily: "'Inter',sans-serif" }}>
+          <div className="text-center py-24 text-[#c9bfa9]/50 flex flex-col items-center">
+            <Users className="w-14 h-14 mb-5 opacity-30" />
+            <p className="text-xl font-serif">Phòng trưng bày đang trống.</p>
+            <p className="text-sm opacity-60 mt-2" style={{ fontFamily: "'Inter',sans-serif" }}>
               Hãy gửi tác phẩm qua trang &quot;Gửi Tác Phẩm&quot;!
             </p>
           </div>
@@ -59,6 +59,8 @@ export default function GalleryPage() {
               onClick={() => setSelected(item as unknown as GalleryDoc)} delay={i * 40} />
           )} />
       )}
+
+      <div className="shelf-floor" />
 
       <AnimatePresence>
         {selected && (

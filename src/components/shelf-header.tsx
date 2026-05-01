@@ -16,12 +16,13 @@ export function ShelfHeader({ title, search, onSearchChange, sort, onSortChange 
   return (
     <div className="bookshelf-header">
       <div className="relative">
-        <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#fdfaf6]/40" />
+        <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#fdfaf6]/30" />
         <input type="text" value={search} onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Tìm kiếm..." className="bookshelf-search" />
       </div>
-      <h2 className="text-base font-semibold tracking-wide hidden sm:block">{title}</h2>
-      <div className="flex items-center gap-2">
+      <h2 className="text-base font-semibold tracking-widest uppercase hidden sm:block text-[#c9bfa9]/80"
+        style={{ fontFamily: "'Inter',sans-serif", fontSize: "11px", letterSpacing: "0.25em" }}>{title}</h2>
+      <div className="flex items-center gap-2.5">
         <button onClick={() => onSortChange("name")} className={`sort-btn flex items-center gap-1.5 ${sort === "name" ? "active" : ""}`}>
           <SortAsc className="w-3 h-3" /> Tên
         </button>

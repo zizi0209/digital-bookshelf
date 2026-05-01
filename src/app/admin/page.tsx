@@ -16,9 +16,9 @@ type GalleryItem = {
 };
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  pending: { bg: "#fef3c7", text: "#92400e", label: "Chờ duyệt" },
-  approved: { bg: "#d1fae5", text: "#065f46", label: "Đã duyệt" },
-  rejected: { bg: "#fee2e2", text: "#944e4e", label: "Từ chối" },
+  pending: { bg: "rgba(254,243,199,0.15)", text: "#fbbf24", label: "Chờ duyệt" },
+  approved: { bg: "rgba(209,250,229,0.12)", text: "#34d399", label: "Đã duyệt" },
+  rejected: { bg: "rgba(254,226,226,0.12)", text: "#f87171", label: "Từ chối" },
 };
 
 export default function AdminPage() {
@@ -32,62 +32,62 @@ export default function AdminPage() {
   const items = tab === "pending" ? pending : all;
 
   return (
-    <main className="min-h-screen flex flex-col bg-linear-to-b from-[#f9f6f0] to-[#f2ede4]">
+    <main className="room-wrapper min-h-screen flex flex-col">
       <Navbar />
-      <div className="max-w-5xl mx-auto w-full px-4 py-8">
-        <div className="flex items-center gap-3 mb-6">
-          <Shield className="w-7 h-7 text-[#5a5a40]" />
-          <h1 className="text-3xl font-bold text-[#3d2b1f]">Quản Trị</h1>
+      <div className="max-w-5xl mx-auto w-full px-6 sm:px-10 py-10">
+        <div className="flex items-center gap-3 mb-8">
+          <Shield className="w-7 h-7 text-[#c9bfa9]" />
+          <h1 className="text-3xl font-bold text-[#fdfaf6]">Quản Trị</h1>
         </div>
 
-        <div className="flex gap-3 mb-6" style={{ fontFamily: "'Inter',sans-serif" }}>
+        <div className="flex gap-3 mb-8" style={{ fontFamily: "'Inter',sans-serif" }}>
           {(["pending", "all"] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)}
-              className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${tab === t ? "bg-[#5a5a40] text-[#fdfaf6] shadow-md" : "bg-[#f2ede4] text-[#5c544d] hover:bg-[#e5e0d5]"}`}>
-              {t === "pending" ? <><Clock className="w-4 h-4 inline mr-1" />Chờ duyệt ({pending?.length ?? 0})</> : <><BookCheck className="w-4 h-4 inline mr-1" />Tất cả ({all?.length ?? 0})</>}
+              className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${tab === t ? "bg-[#5a5a40] text-[#fdfaf6] shadow-lg" : "bg-[#fdfaf6]/6 text-[#c9bfa9]/50 hover:bg-[#fdfaf6]/10 hover:text-[#c9bfa9]/80"}`}>
+              {t === "pending" ? <><Clock className="w-4 h-4 inline mr-1.5" />Chờ duyệt ({pending?.length ?? 0})</> : <><BookCheck className="w-4 h-4 inline mr-1.5" />Tất cả ({all?.length ?? 0})</>}
             </button>
           ))}
         </div>
 
         {items === undefined ? (
-          <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-32 rounded-xl bg-[#e5e0d5]/50 animate-pulse-soft" />)}</div>
+          <div className="space-y-5">{[1,2,3].map(i => <div key={i} className="h-32 rounded-xl bg-[#fdfaf6]/4 animate-pulse-soft" />)}</div>
         ) : items.length === 0 ? (
-          <div className="text-center py-16 text-[#8e8a7d]">
-            <BookX className="w-12 h-12 mx-auto mb-4 opacity-30" />
-            <p>{tab === "pending" ? "Không có tác phẩm nào đang chờ duyệt." : "Chưa có tác phẩm nào."}</p>
+          <div className="text-center py-20 text-[#c9bfa9]/40">
+            <BookX className="w-14 h-14 mx-auto mb-5 opacity-30" />
+            <p className="text-lg font-serif">{tab === "pending" ? "Không có tác phẩm nào đang chờ duyệt." : "Chưa có tác phẩm nào."}</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {items.map((item) => {
               const s = STATUS_COLORS[item.status] || STATUS_COLORS.pending;
               return (
-                <div key={item._id} className="bg-[#fdfaf6]/90 backdrop-blur-sm border border-[#e5e0d5] rounded-xl p-5 hover:shadow-lg transition-shadow">
+                <div key={item._id} className="bg-[#2a2520]/60 backdrop-blur-sm border border-[#fdfaf6]/6 rounded-xl p-6 hover:border-[#fdfaf6]/12 transition-all hover:shadow-lg">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-bold text-[#3d2b1f] truncate">{item.title}</h3>
-                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold shrink-0" style={{ background: s.bg, color: s.text, fontFamily: "'Inter',sans-serif" }}>{s.label}</span>
+                      <div className="flex items-center gap-2.5 mb-1.5">
+                        <h3 className="text-lg font-bold text-[#fdfaf6] truncate">{item.title}</h3>
+                        <span className="text-[11px] px-2.5 py-0.5 rounded-full font-semibold shrink-0" style={{ background: s.bg, color: s.text, fontFamily: "'Inter',sans-serif" }}>{s.label}</span>
                       </div>
-                      <p className="text-sm text-[#8e8a7d] truncate" style={{ fontFamily: "'Inter',sans-serif" }}>
-                        bởi <strong>{item.authorName}</strong> · {item.authorEmail} · {item.genre} · {item.pages.length} trang
+                      <p className="text-sm text-[#c9bfa9]/50 truncate" style={{ fontFamily: "'Inter',sans-serif" }}>
+                        bởi <strong className="text-[#c9bfa9]/70">{item.authorName}</strong> · {item.authorEmail} · {item.genre} · {item.pages.length} trang
                       </p>
-                      {item.description && <p className="text-sm mt-1 line-clamp-2 text-[#5c544d]">{item.description}</p>}
+                      {item.description && <p className="text-sm mt-2 line-clamp-2 text-[#c9bfa9]/40">{item.description}</p>}
                     </div>
-                    <div className="flex items-center gap-2 shrink-0" style={{ fontFamily: "'Inter',sans-serif" }}>
-                      <button className="px-3 py-1.5 rounded-lg text-[13px] font-semibold bg-[#f2ede4] text-[#5a5a40] inline-flex items-center gap-1.5 hover:bg-[#e5e0d5] transition-colors" onClick={() => setPreview(item as GalleryItem)}>
+                    <div className="flex items-center gap-2.5 shrink-0" style={{ fontFamily: "'Inter',sans-serif" }}>
+                      <button className="px-3.5 py-2 rounded-lg text-[13px] font-semibold bg-[#fdfaf6]/6 text-[#c9bfa9]/70 inline-flex items-center gap-1.5 hover:bg-[#fdfaf6]/12 transition-colors" onClick={() => setPreview(item as GalleryItem)}>
                         <Eye className="w-4 h-4" />Xem
                       </button>
                       {item.status !== "approved" && (
-                        <button className="px-3 py-1.5 rounded-lg text-[13px] font-semibold bg-[#065f46] text-white inline-flex items-center gap-1.5 hover:opacity-80 transition-opacity" onClick={async () => { await approve({ id: item._id }); toast.success("Đã duyệt!"); }}>
+                        <button className="px-3.5 py-2 rounded-lg text-[13px] font-semibold bg-emerald-600/20 text-emerald-400 inline-flex items-center gap-1.5 hover:bg-emerald-600/30 transition-colors" onClick={async () => { await approve({ id: item._id }); toast.success("Đã duyệt!"); }}>
                           <CheckCircle className="w-4 h-4" />Duyệt
                         </button>
                       )}
                       {item.status !== "rejected" && (
-                        <button className="px-3 py-1.5 rounded-lg text-[13px] font-semibold bg-[#944e4e] text-white inline-flex items-center gap-1.5 hover:opacity-80 transition-opacity" onClick={async () => { await reject({ id: item._id }); toast.info("Đã từ chối."); }}>
+                        <button className="px-3.5 py-2 rounded-lg text-[13px] font-semibold bg-red-600/15 text-red-400 inline-flex items-center gap-1.5 hover:bg-red-600/25 transition-colors" onClick={async () => { await reject({ id: item._id }); toast.info("Đã từ chối."); }}>
                           <XCircle className="w-4 h-4" />Từ chối
                         </button>
                       )}
-                      <button className="px-3 py-1.5 rounded-lg text-[13px] font-semibold border border-[#944e4e] text-[#944e4e] inline-flex items-center gap-1.5 hover:bg-[#944e4e] hover:text-white transition-colors"
+                      <button className="px-3.5 py-2 rounded-lg text-[13px] font-semibold border border-red-400/20 text-red-400/70 inline-flex items-center gap-1.5 hover:bg-red-600/15 hover:text-red-400 transition-colors"
                         onClick={async () => { if (confirm("Xóa vĩnh viễn?")) { await remove({ id: item._id }); toast.success("Đã xóa."); } }}>
                         <Trash2 className="w-4 h-4" />
                       </button>

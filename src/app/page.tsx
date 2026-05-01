@@ -37,20 +37,20 @@ export default function Home() {
   }, [books, search, sort]);
 
   return (
-    <main className="min-h-screen flex flex-col">
+    <main className="room-wrapper min-h-screen flex flex-col">
       <Navbar />
       <ShelfHeader title="Kệ Sách Của Tsukizoe" search={search} onSearchChange={setSearch} sort={sort} onSortChange={setSort} />
 
       {filtered === undefined ? (
-        <div className="shelf-wall flex-1 p-8"><BookSkeleton /></div>
+        <div className="shelf-wall flex-1 px-8 py-10"><BookSkeleton /></div>
       ) : filtered.length === 0 ? (
         <div className="shelf-wall flex-1 flex items-center justify-center">
-          <div className="text-center py-20 text-[#8e8a7d] flex flex-col items-center">
-            <Library className="w-12 h-12 mb-4 opacity-30" />
-            <p className="text-lg font-serif">Kệ sách đang trống.</p>
-            <p className="text-sm opacity-60 mt-1" style={{ fontFamily: "'Inter',sans-serif" }}>Chưa có tác phẩm nào.</p>
+          <div className="text-center py-24 text-[#c9bfa9]/50 flex flex-col items-center">
+            <Library className="w-14 h-14 mb-5 opacity-30" />
+            <p className="text-xl font-serif">Kệ sách đang trống.</p>
+            <p className="text-sm opacity-60 mt-2" style={{ fontFamily: "'Inter',sans-serif" }}>Chưa có tác phẩm nào.</p>
             <button onClick={() => seed()}
-              className="mt-6 px-6 py-2 rounded-lg text-sm border border-[#e5e0d5] text-[#5c544d] hover:bg-[#f2ede4] transition-colors"
+              className="mt-8 px-8 py-2.5 rounded-full text-sm border border-[#c9bfa9]/20 text-[#c9bfa9]/70 hover:bg-[#c9bfa9]/10 hover:text-[#c9bfa9] transition-all"
               style={{ fontFamily: "'Inter',sans-serif" }}>
               Tạo Dữ Liệu Mẫu
             </button>
@@ -63,6 +63,8 @@ export default function Home() {
               onClick={() => setSelected(book as unknown as BookDoc)} delay={i * 40} />
           )} />
       )}
+
+      <div className="shelf-floor" />
 
       <AnimatePresence>
         {selected && (
