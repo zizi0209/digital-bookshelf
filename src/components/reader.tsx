@@ -34,7 +34,7 @@ function usePageFlipSound() {
       g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
       src.connect(bp).connect(hp).connect(g).connect(ctx.destination);
       src.start();
-    } catch {}
+    } catch { /* silent */ }
   }, []);
 }
 
@@ -52,17 +52,26 @@ export function Reader({ title, author, genre, coverUrl, pages, onClose }: Reade
   const playFlip = usePageFlipSound();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const bookRef = useRef<any>(null);
-  const [dims, setDims] = useState({ width: 480, height: 650 });
+  const [dims, setDims] = useState({ width: 500, height: 700 });
   const [mobile, setMobile] = useState(false);
 
   useEffect(() => {
     const resize = () => {
-      if (window.innerWidth < 768) {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      if (vw < 768) {
         setMobile(true);
-        setDims({ width: window.innerWidth - 32, height: window.innerHeight - 150 });
+        const w = vw - 16;
+        const h = vh - 80;
+        setDims({ width: w, height: h });
       } else {
+        // Desktop spread: tổng rộng = width*2, phải vừa viewport
         setMobile(false);
-        setDims({ width: 480, height: 650 });
+        const h = vh - 60;
+        const wFromH = Math.round(h * 0.68);
+        const wFromVw = Math.floor((vw - 80) / 2);
+        const w = Math.min(wFromH, wFromVw);
+        setDims({ width: w, height: h });
       }
     };
     resize();
@@ -74,27 +83,27 @@ export function Reader({ title, author, genre, coverUrl, pages, onClose }: Reade
   const prev = () => bookRef.current?.pageFlip().flipPrev();
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-8 md:pt-16">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 md:p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative w-full max-w-[1000px] flex justify-center items-center z-10"
+        className="relative flex justify-center items-center z-10"
       >
         {/* Close */}
-        <button onClick={onClose} className="absolute -top-12 md:-top-16 right-0 text-[#f5f0e6] hover:text-white hover:bg-white/20 z-[70] rounded-full p-2">
+        <button onClick={onClose} className="absolute -top-10 md:-top-14 right-0 text-[#f5f0e6] hover:text-white hover:bg-white/20 z-[70] rounded-full p-2">
           <X className="w-6 h-6 md:w-8 md:h-8" />
         </button>
 
         {/* Nav Prev */}
-        <div className="absolute inset-y-0 -left-4 md:-left-20 flex items-center pointer-events-none z-[80]">
+        <div className="absolute inset-y-0 -left-4 md:-left-16 flex items-center pointer-events-none z-[80]">
           <button onClick={prev} className="pointer-events-auto bg-black/20 hover:bg-black/40 backdrop-blur-md p-3 rounded-full text-white transition-all hover:scale-110 active:scale-95 shadow-lg hidden md:block">
             <ChevronLeft className="w-8 h-8" />
           </button>
         </div>
 
         {/* Nav Next */}
-        <div className="absolute inset-y-0 -right-4 md:-right-20 flex items-center pointer-events-none z-[80]">
+        <div className="absolute inset-y-0 -right-4 md:-right-16 flex items-center pointer-events-none z-[80]">
           <button onClick={next} className="pointer-events-auto bg-black/20 hover:bg-black/40 backdrop-blur-md p-3 rounded-full text-white transition-all hover:scale-110 active:scale-95 shadow-lg hidden md:block">
             <ChevronRight className="w-8 h-8" />
           </button>
@@ -103,11 +112,10 @@ export function Reader({ title, author, genre, coverUrl, pages, onClose }: Reade
         <div className="shadow-2xl rounded-sm">
           {/* @ts-expect-error react-pageflip typings */}
           <HTMLFlipBook
-            width={dims.width} height={dims.height} size="stretch"
-            minWidth={300} maxWidth={500} minHeight={400} maxHeight={700}
-            maxShadowOpacity={0.4} showCover mobileScrollSupport
+            width={dims.width} height={dims.height} size="fixed"
+            maxShadowOpacity={0.5} showCover mobileScrollSupport
             onFlip={() => playFlip()} className="html-book" ref={bookRef}
-            flippingTime={900} usePortrait={mobile} useMouseEvents
+            flippingTime={800} usePortrait={mobile} useMouseEvents
             style={{ margin: "0 auto" }}
           >
             {/* Front Cover */}
@@ -141,7 +149,7 @@ export function Reader({ title, author, genre, coverUrl, pages, onClose }: Reade
                     TRANG {idx + 1}
                   </span>
                 </div>
-                <div className="font-serif text-[#5c544d] leading-[1.8] text-base md:text-lg flex-1 overflow-hidden z-20 relative" dangerouslySetInnerHTML={{ __html: content.replace(/\n/g, "<br/>") }} />
+                <div className="font-serif text-[#5c544d] leading-[1.8] text-base md:text-lg flex-1 overflow-hidden z-20 relative" dangerouslySetInnerHTML={{ __html: content.replace(/\\n/g, "<br/>") }} />
               </div>
             ))}
 
