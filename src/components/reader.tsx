@@ -1,9 +1,44 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRef, useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import HTMLFlipBook from "react-pageflip";
 
+/* ---------- Page-flip sound hook ---------- */
+function usePageFlipSound() {
+  const ctxRef = useRef<AudioContext | null>(null);
+  return useCallback(() => {
+    try {
+      if (!ctxRef.current) ctxRef.current = new AudioContext();
+      const ctx = ctxRef.current;
+      if (ctx.state === "suspended") ctx.resume();
+      const dur = 0.35;
+      const len = ctx.sampleRate * dur;
+      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (Math.random() > 0.4 ? 1 : 0.2);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const bp = ctx.createBiquadFilter();
+      bp.type = "bandpass"; bp.frequency.value = 3500; bp.Q.value = 0.5;
+      const hp = ctx.createBiquadFilter();
+      hp.type = "highpass"; hp.frequency.value = 1200;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, ctx.currentTime);
+      g.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.02);
+      g.gain.linearRampToValueAtTime(0.03, ctx.currentTime + 0.06);
+      g.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.12);
+      g.gain.linearRampToValueAtTime(0.02, ctx.currentTime + 0.18);
+      g.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 0.25);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+      src.connect(bp).connect(hp).connect(g).connect(ctx.destination);
+      src.start();
+    } catch {}
+  }, []);
+}
+
+/* ---------- Reader component ---------- */
 interface ReaderProps {
   title: string;
   author?: string;
@@ -13,118 +48,116 @@ interface ReaderProps {
   onClose: () => void;
 }
 
-function usePageFlip() {
-  const ctxRef = useRef<AudioContext | null>(null);
-  return useCallback(() => {
-    try {
-      if (!ctxRef.current) ctxRef.current = new AudioContext();
-      const ctx = ctxRef.current;
-      if (ctx.state === "suspended") ctx.resume();
-      const len = ctx.sampleRate * 0.15;
-      const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-      const d = buf.getChannelData(0);
-      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
-      const src = ctx.createBufferSource();
-      src.buffer = buf;
-      const bp = ctx.createBiquadFilter();
-      bp.type = "bandpass"; bp.frequency.value = 1000; bp.Q.value = 0.5;
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(0, ctx.currentTime);
-      g.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
-      src.connect(bp).connect(g).connect(ctx.destination);
-      src.start();
-    } catch {}
-  }, []);
-}
-
 export function Reader({ title, author, genre, coverUrl, pages, onClose }: ReaderProps) {
-  const [page, setPage] = useState(0);
-  const [dir, setDir] = useState(1);
-  const flip = usePageFlip();
-  const total = pages.length;
+  const playFlip = usePageFlipSound();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const bookRef = useRef<any>(null);
+  const [dims, setDims] = useState({ width: 480, height: 650 });
+  const [mobile, setMobile] = useState(false);
 
-  const next = () => { if (page < total - 1) { setDir(1); setPage(p => p + 1); flip(); } };
-  const prev = () => { if (page > 0) { setDir(-1); setPage(p => p - 1); flip(); } };
+  useEffect(() => {
+    const resize = () => {
+      if (window.innerWidth < 768) {
+        setMobile(true);
+        setDims({ width: window.innerWidth - 32, height: window.innerHeight - 150 });
+      } else {
+        setMobile(false);
+        setDims({ width: 480, height: 650 });
+      }
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, []);
+
+  const next = () => bookRef.current?.pageFlip().flipNext();
+  const prev = () => bookRef.current?.pageFlip().flipPrev();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8" style={{ background: "rgba(0,0,0,.6)", backdropFilter: "blur(4px)" }}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-8 md:pt-16">
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        className="relative w-full max-w-4xl h-[85vh] md:h-[90vh] flex"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="relative w-full max-w-[1000px] flex justify-center items-center z-10"
       >
-        <button onClick={onClose} className="absolute -top-12 right-0 text-white hover:text-white/70 z-50 p-2 rounded-full transition-colors">
-          <X className="w-6 h-6" />
+        {/* Close */}
+        <button onClick={onClose} className="absolute -top-12 md:-top-16 right-0 text-[#f5f0e6] hover:text-white hover:bg-white/20 z-[70] rounded-full p-2">
+          <X className="w-6 h-6 md:w-8 md:h-8" />
         </button>
 
-        <div className="w-full h-full rounded-lg shadow-2xl relative flex overflow-hidden" style={{ background: "var(--color-bg)", border: "1px solid var(--color-border)" }}>
-          {/* Spine shadow */}
-          <div className="absolute inset-y-0 left-1/2 w-12 -ml-6 bg-gradient-to-r from-black/5 via-black/10 to-transparent pointer-events-none z-10 hidden md:block" />
+        {/* Nav Prev */}
+        <div className="absolute inset-y-0 -left-4 md:-left-20 flex items-center pointer-events-none z-[80]">
+          <button onClick={prev} className="pointer-events-auto bg-black/20 hover:bg-black/40 backdrop-blur-md p-3 rounded-full text-white transition-all hover:scale-110 active:scale-95 shadow-lg hidden md:block">
+            <ChevronLeft className="w-8 h-8" />
+          </button>
+        </div>
 
-          {/* Left page (desktop) */}
-          <div className="hidden md:flex w-1/2 h-full flex-col p-8 relative" style={{ borderRight: "1px solid var(--color-border)", boxShadow: "inset -30px 0 40px rgba(0,0,0,.03)" }}>
-            <div className="flex justify-between items-center mb-4 pb-2" style={{ borderBottom: "1px solid var(--color-border)" }}>
-              <span className="text-[10px] uppercase tracking-widest opacity-50" style={{ color: "var(--color-primary)", fontFamily: "'Inter',sans-serif" }}>{title}</span>
-              <span className="text-[10px] opacity-50" style={{ fontFamily: "'Inter',sans-serif" }}>{page > 0 ? `Trang ${page}` : ""}</span>
-            </div>
-            <div className="flex-1 overflow-y-auto pr-4">
-              <AnimatePresence mode="popLayout">
-                <motion.div key={`l-${page}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}
-                  className="leading-relaxed whitespace-pre-wrap" style={{ color: "#5c544d" }}
-                >
-                  {page > 0 ? pages[page - 1] : (
-                    <div className="h-full flex flex-col items-center justify-center text-center">
-                      <h1 className="text-3xl font-bold mb-4" style={{ color: "var(--color-primary)" }}>{title}</h1>
-                      <p className="italic mb-8" style={{ color: "var(--color-muted)" }}>bởi {author || "Tsukizoe"}</p>
-                      {coverUrl && <img src={coverUrl} alt="Cover" className="w-48 h-64 object-cover rounded shadow-lg" />}
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
+        {/* Nav Next */}
+        <div className="absolute inset-y-0 -right-4 md:-right-20 flex items-center pointer-events-none z-[80]">
+          <button onClick={next} className="pointer-events-auto bg-black/20 hover:bg-black/40 backdrop-blur-md p-3 rounded-full text-white transition-all hover:scale-110 active:scale-95 shadow-lg hidden md:block">
+            <ChevronRight className="w-8 h-8" />
+          </button>
+        </div>
 
-          {/* Right page */}
-          <div className="w-full md:w-1/2 h-full flex flex-col p-6 md:p-8 relative" style={{ boxShadow: "inset 30px 0 40px rgba(0,0,0,.03)" }}>
-            <div className="flex justify-between items-center mb-4 pb-2" style={{ borderBottom: "1px solid var(--color-border)" }}>
-              <span className="text-[10px] uppercase tracking-widest opacity-50" style={{ color: "var(--color-primary)", fontFamily: "'Inter',sans-serif" }}>{genre || ""}</span>
-              <span className="text-[10px] opacity-50" style={{ fontFamily: "'Inter',sans-serif" }}>Trang {page + 1}</span>
+        <div className="shadow-2xl rounded-sm">
+          {/* @ts-expect-error react-pageflip typings */}
+          <HTMLFlipBook
+            width={dims.width} height={dims.height} size="stretch"
+            minWidth={300} maxWidth={500} minHeight={400} maxHeight={700}
+            maxShadowOpacity={0.4} showCover mobileScrollSupport
+            onFlip={() => playFlip()} className="html-book" ref={bookRef}
+            flippingTime={900} usePortrait={mobile} useMouseEvents
+            style={{ margin: "0 auto" }}
+          >
+            {/* Front Cover */}
+            <div className="demoPage bg-[#fdfaf6] border border-[#dcd7cc] flex flex-col justify-center items-center overflow-hidden shadow-[inset_-20px_0_40px_rgba(0,0,0,0.05)]">
+              {coverUrl ? (
+                <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
+              ) : (
+                <div className="p-8 text-center flex flex-col items-center justify-center h-full">
+                  <h1 className="text-4xl font-serif text-[#5a5a40] mb-4 font-bold">{title}</h1>
+                  <p className="text-[#8e8a7d] italic text-lg mb-8">bởi {author || "Tsukizoe"}</p>
+                </div>
+              )}
+              <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-black/20 to-transparent pointer-events-none z-10" />
             </div>
-            <div className="flex-1 overflow-y-auto pr-2">
-              <AnimatePresence mode="popLayout">
-                <motion.div key={`r-${page}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}
-                  className="leading-relaxed whitespace-pre-wrap" style={{ color: "#5c544d" }}
-                >
-                  {pages[page] || (
-                    <div className="h-full flex flex-col items-center justify-center text-center opacity-70">
-                      <p className="text-2xl italic mb-4">— Hết —</p>
-                      <div className="w-16 h-px" style={{ background: "var(--color-border)" }} />
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
 
-          {/* Nav overlay */}
-          <div className="absolute inset-0 flex justify-between items-center pointer-events-none px-2 md:px-0">
-            <button onClick={prev} disabled={page === 0}
-              className="pointer-events-auto h-full w-1/4 md:w-16 flex items-center justify-start md:justify-center opacity-0 hover:opacity-100 transition-opacity disabled:opacity-0 disabled:cursor-not-allowed"
-            >
-              <div className="p-2 rounded-full" style={{ background: "rgba(0,0,0,.1)", backdropFilter: "blur(8px)" }}>
-                <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" />
+            {/* Inside Cover */}
+            <div className="demoPage bg-[#f9f6f0] border-l border-[#dcd7cc] shadow-[inset_20px_0_40px_rgba(0,0,0,0.05)] text-center flex flex-col justify-center text-sm text-stone-300" style={{ fontFamily: "'Inter',sans-serif" }}>
+              <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-black/10 to-transparent pointer-events-none z-10" />
+              Tsukizoe
+            </div>
+
+            {/* Content Pages */}
+            {pages.map((content, idx) => (
+              <div key={idx} className="demoPage bg-[#fdfaf6] py-10 px-8 md:px-12 border border-[#f0ebe1] flex flex-col relative">
+                <div className={`absolute inset-y-0 ${idx % 2 === 0 ? "right-0 w-8 bg-gradient-to-l from-black/10" : "left-0 w-8 bg-gradient-to-r from-black/10"} to-transparent pointer-events-none z-10`} />
+                <div className="flex justify-between items-center mb-6 border-b border-[#e5e0d5] pb-3 opacity-50 z-20 relative">
+                  <span className="text-[10px] uppercase tracking-widest text-[#5a5a40]" style={{ fontFamily: "'Inter',sans-serif" }}>
+                    {idx % 2 !== 0 ? title : (genre || "").replace("_", " ")}
+                  </span>
+                  <span className="text-[10px] text-[#5a5a40] tracking-widest" style={{ fontFamily: "'Inter',sans-serif" }}>
+                    TRANG {idx + 1}
+                  </span>
+                </div>
+                <div className="font-serif text-[#5c544d] leading-[1.8] text-base md:text-lg flex-1 overflow-hidden z-20 relative" dangerouslySetInnerHTML={{ __html: content.replace(/\n/g, "<br/>") }} />
               </div>
-            </button>
-            <button onClick={next} disabled={page >= total - 1}
-              className="pointer-events-auto h-full w-1/4 md:w-16 flex items-center justify-end md:justify-center opacity-0 hover:opacity-100 transition-opacity disabled:opacity-0 disabled:cursor-not-allowed"
-            >
-              <div className="p-2 rounded-full" style={{ background: "rgba(0,0,0,.1)", backdropFilter: "blur(8px)" }}>
-                <ChevronRight className="w-6 h-6 md:w-8 md:h-8" />
-              </div>
-            </button>
-          </div>
+            ))}
+
+            {/* End Page */}
+            <div className="demoPage bg-[#fdfaf6] border border-[#dcd7cc] flex flex-col justify-center items-center relative">
+              <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-black/10 to-transparent pointer-events-none z-10" />
+              <p className="text-2xl font-serif italic mb-4 opacity-70">Hết</p>
+              <div className="w-16 h-px bg-[#e5e0d5]" />
+            </div>
+
+            {/* Back Cover */}
+            <div className="demoPage bg-[#8e8a7d] border border-[#5c544d] flex justify-center items-center shadow-[inset_20px_0_40px_rgba(0,0,0,0.1)] relative">
+              <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-black/20 to-transparent pointer-events-none z-10" />
+              <p className="text-[#e5e0d5] text-sm opacity-50 tracking-widest uppercase" style={{ fontFamily: "'Inter',sans-serif" }}>Tsukizoe</p>
+            </div>
+          </HTMLFlipBook>
         </div>
       </motion.div>
     </div>

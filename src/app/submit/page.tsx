@@ -34,37 +34,38 @@ export default function SubmitPage() {
     } catch { toast.error("Có lỗi xảy ra."); } finally { setLoading(false); }
   };
 
-  const inp: React.CSSProperties = { width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid var(--color-input)", background: "var(--color-secondary)", fontFamily: "'Inter',sans-serif", fontSize: 14, outline: "none" };
-  const lbl: React.CSSProperties = { display: "block", marginBottom: 6, fontSize: 13, fontWeight: 600, color: "var(--color-primary)", fontFamily: "'Inter',sans-serif" };
+  const inp = "w-full px-3.5 py-2.5 rounded-lg border border-[#dcd7cc] bg-[#f9f6f0] text-sm outline-none focus:border-[#5a5a40] transition-colors";
+  const lbl = "block mb-1.5 text-[13px] font-semibold text-[#5a5a40]";
 
   return (
-    <main className="min-h-screen flex flex-col" style={{ background: "var(--color-bg)" }}>
+    <main className="min-h-screen flex flex-col bg-[#fdfaf6]">
       <Navbar />
       <div className="max-w-2xl mx-auto w-full px-4 py-8 md:py-12">
         <div className="flex items-center gap-3 mb-2">
-          <BookPlus className="w-7 h-7" style={{ color: "var(--color-primary)" }} />
-          <h1 className="text-3xl font-bold" style={{ color: "var(--color-primary)" }}>Gửi Tác Phẩm</h1>
+          <BookPlus className="w-7 h-7 text-[#5a5a40]" />
+          <h1 className="text-3xl font-bold text-[#5a5a40]">Gửi Tác Phẩm</h1>
         </div>
-        <p className="mb-8 text-sm" style={{ color: "var(--color-muted)", fontFamily: "'Inter',sans-serif" }}>
+        <p className="mb-8 text-sm text-[#8e8a7d]" style={{ fontFamily: "'Inter',sans-serif" }}>
           Gửi truyện/sách digital của bạn. Sau khi admin duyệt, tác phẩm sẽ xuất hiện tại Phòng Trưng Bày.
         </p>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div><label style={lbl}>Tên tác phẩm *</label><input value={form.title} onChange={(e) => set("title", e.target.value)} placeholder="Nhập tên truyện..." style={inp} /></div>
+        <form onSubmit={handleSubmit} className="space-y-5" style={{ fontFamily: "'Inter',sans-serif" }}>
+          <div><label className={lbl}>Tên tác phẩm *</label><input value={form.title} onChange={(e) => set("title", e.target.value)} placeholder="Nhập tên truyện..." className={inp} /></div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div><label style={lbl}>Tên tác giả *</label><input value={form.authorName} onChange={(e) => set("authorName", e.target.value)} placeholder="Bút danh..." style={inp} /></div>
-            <div><label style={lbl}>Email *</label><input type="email" value={form.authorEmail} onChange={(e) => set("authorEmail", e.target.value)} placeholder="email@example.com" style={inp} /></div>
+            <div><label className={lbl}>Tên tác giả *</label><input value={form.authorName} onChange={(e) => set("authorName", e.target.value)} placeholder="Bút danh..." className={inp} /></div>
+            <div><label className={lbl}>Email *</label><input type="email" value={form.authorEmail} onChange={(e) => set("authorEmail", e.target.value)} placeholder="email@example.com" className={inp} /></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div><label style={lbl}>Thể loại *</label><select value={form.genre} onChange={(e) => set("genre", e.target.value)} style={inp}><option value="">-- Chọn --</option>{GENRES.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}</select></div>
-            <div><label style={lbl}>Ảnh bìa (URL)</label><input value={form.coverUrl} onChange={(e) => set("coverUrl", e.target.value)} placeholder="https://..." style={inp} /></div>
+            <div><label className={lbl}>Thể loại *</label><select value={form.genre} onChange={(e) => set("genre", e.target.value)} className={inp}><option value="">-- Chọn --</option>{GENRES.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}</select></div>
+            <div><label className={lbl}>Ảnh bìa (URL)</label><input value={form.coverUrl} onChange={(e) => set("coverUrl", e.target.value)} placeholder="https://..." className={inp} /></div>
           </div>
-          <div><label style={lbl}>Mô tả ngắn</label><textarea value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Tóm tắt..." rows={3} style={{ ...inp, resize: "vertical" as const }} /></div>
+          <div><label className={lbl}>Mô tả ngắn</label><textarea value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Tóm tắt..." rows={3} className={`${inp} resize-y`} /></div>
           <div>
-            <label style={lbl}>Nội dung các trang *</label>
-            <p className="text-xs mb-2" style={{ color: "var(--color-muted)" }}>Phân tách từng trang bằng <code style={{ background: "var(--color-accent)", padding: "2px 6px", borderRadius: 4 }}>---</code></p>
-            <textarea value={form.pagesText} onChange={(e) => set("pagesText", e.target.value)} placeholder={"Trang 1...\n---\nTrang 2..."} rows={10} style={{ ...inp, resize: "vertical" as const, minHeight: 200 }} />
+            <label className={lbl}>Nội dung các trang *</label>
+            <p className="text-xs mb-2 text-[#8e8a7d]">Phân tách từng trang bằng <code className="bg-[#f2ede4] px-1.5 py-0.5 rounded">---</code></p>
+            <textarea value={form.pagesText} onChange={(e) => set("pagesText", e.target.value)} placeholder={"Trang 1...\n---\nTrang 2..."} rows={10} className={`${inp} resize-y min-h-[200px]`} />
           </div>
-          <button type="submit" disabled={loading} className="w-full py-3 rounded-full text-white font-semibold text-sm uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50" style={{ background: "var(--color-primary)", fontFamily: "'Inter',sans-serif" }}>
+          <button type="submit" disabled={loading}
+            className="w-full py-3 rounded-full bg-[#5a5a40] text-white font-semibold text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-[#4a4a30] disabled:opacity-50 transition-colors">
             <Send className="w-4 h-4" />{loading ? "Đang gửi..." : "Gửi Tác Phẩm"}
           </button>
         </form>

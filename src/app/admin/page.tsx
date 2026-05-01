@@ -10,16 +10,9 @@ import { Shield, CheckCircle, XCircle, Trash2, Eye, Clock, BookCheck, BookX } fr
 import type { Id } from "../../../convex/_generated/dataModel";
 
 type GalleryItem = {
-  _id: Id<"gallery">;
-  title: string;
-  authorName: string;
-  authorEmail: string;
-  description: string;
-  genre: string;
-  coverUrl?: string;
-  pages: string[];
-  status: string;
-  createdAt: number;
+  _id: Id<"gallery">; title: string; authorName: string; authorEmail: string;
+  description: string; genre: string; coverUrl?: string; pages: string[];
+  status: string; createdAt: number;
 };
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }> = {
@@ -36,34 +29,22 @@ export default function AdminPage() {
   const approve = useMutation(api.gallery.approve);
   const reject = useMutation(api.gallery.reject);
   const remove = useMutation(api.gallery.remove);
-
   const items = tab === "pending" ? pending : all;
 
-  const cardStyle: React.CSSProperties = {
-    background: "var(--color-bg)", border: "1px solid var(--color-border)",
-    borderRadius: 12, padding: 20, transition: "box-shadow .2s",
-  };
-  const btnBase: React.CSSProperties = {
-    padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600,
-    fontFamily: "'Inter',sans-serif", display: "inline-flex", alignItems: "center",
-    gap: 6, cursor: "pointer", border: "none", transition: "opacity .2s",
-  };
-
   return (
-    <main className="min-h-screen flex flex-col" style={{ background: "var(--color-accent)" }}>
+    <main className="min-h-screen flex flex-col bg-[#f2ede4]">
       <Navbar />
       <div className="max-w-5xl mx-auto w-full px-4 py-8">
         <div className="flex items-center gap-3 mb-6">
-          <Shield className="w-7 h-7" style={{ color: "var(--color-primary)" }} />
-          <h1 className="text-3xl font-bold" style={{ color: "var(--color-primary)" }}>Quản Trị</h1>
+          <Shield className="w-7 h-7 text-[#5a5a40]" />
+          <h1 className="text-3xl font-bold text-[#5a5a40]">Quản Trị</h1>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-4 mb-6" style={{ fontFamily: "'Inter',sans-serif" }}>
           {(["pending", "all"] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)}
-              className="px-4 py-2 rounded-full text-sm font-semibold transition-colors"
-              style={{ background: tab === t ? "var(--color-primary)" : "var(--color-secondary)", color: tab === t ? "#fff" : "var(--color-muted)", border: tab === t ? "none" : "1px solid var(--color-border)" }}>
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${tab === t ? "bg-[#5a5a40] text-white" : "bg-[#f9f6f0] text-[#8e8a7d] border border-[#e5e0d5]"}`}>
               {t === "pending" ? <><Clock className="w-4 h-4 inline mr-1" />Chờ duyệt ({pending?.length ?? 0})</> : <><BookCheck className="w-4 h-4 inline mr-1" />Tất cả ({all?.length ?? 0})</>}
             </button>
           ))}
@@ -71,9 +52,9 @@ export default function AdminPage() {
 
         {/* List */}
         {items === undefined ? (
-          <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-32 rounded-xl animate-pulse-soft" style={{ background: "var(--color-border)" }} />)}</div>
+          <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-32 rounded-xl bg-[#e5e0d5] animate-pulse-soft" />)}</div>
         ) : items.length === 0 ? (
-          <div className="text-center py-16" style={{ color: "var(--color-muted)" }}>
+          <div className="text-center py-16 text-[#8e8a7d]">
             <BookX className="w-12 h-12 mx-auto mb-4 opacity-20" />
             <p>{tab === "pending" ? "Không có tác phẩm nào đang chờ duyệt." : "Chưa có tác phẩm nào."}</p>
           </div>
@@ -82,33 +63,33 @@ export default function AdminPage() {
             {items.map((item) => {
               const s = STATUS_COLORS[item.status] || STATUS_COLORS.pending;
               return (
-                <div key={item._id} style={cardStyle} className="hover:shadow-md">
+                <div key={item._id} className="bg-[#fdfaf6] border border-[#e5e0d5] rounded-xl p-5 hover:shadow-md transition-shadow">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-bold truncate" style={{ color: "var(--color-primary)" }}>{item.title}</h3>
+                        <h3 className="text-lg font-bold text-[#5a5a40] truncate">{item.title}</h3>
                         <span className="text-xs px-2 py-0.5 rounded-full font-semibold shrink-0" style={{ background: s.bg, color: s.text, fontFamily: "'Inter',sans-serif" }}>{s.label}</span>
                       </div>
-                      <p className="text-sm truncate" style={{ color: "var(--color-muted)", fontFamily: "'Inter',sans-serif" }}>
+                      <p className="text-sm text-[#8e8a7d] truncate" style={{ fontFamily: "'Inter',sans-serif" }}>
                         bởi <strong>{item.authorName}</strong> · {item.authorEmail} · {item.genre} · {item.pages.length} trang
                       </p>
-                      {item.description && <p className="text-sm mt-1 line-clamp-2" style={{ color: "var(--color-fg)" }}>{item.description}</p>}
+                      {item.description && <p className="text-sm mt-1 line-clamp-2 text-[#3d2b1f]">{item.description}</p>}
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button style={{ ...btnBase, background: "var(--color-secondary)", color: "var(--color-primary)" }} onClick={() => setPreview(item as GalleryItem)}>
+                    <div className="flex items-center gap-2 shrink-0" style={{ fontFamily: "'Inter',sans-serif" }}>
+                      <button className="px-3 py-1.5 rounded-lg text-[13px] font-semibold bg-[#f9f6f0] text-[#5a5a40] inline-flex items-center gap-1.5 hover:bg-[#f2ede4] transition-colors" onClick={() => setPreview(item as GalleryItem)}>
                         <Eye className="w-4 h-4" />Xem
                       </button>
                       {item.status !== "approved" && (
-                        <button style={{ ...btnBase, background: "#065f46", color: "#fff" }} onClick={async () => { await approve({ id: item._id }); toast.success("Đã duyệt!"); }}>
+                        <button className="px-3 py-1.5 rounded-lg text-[13px] font-semibold bg-[#065f46] text-white inline-flex items-center gap-1.5 hover:opacity-80 transition-opacity" onClick={async () => { await approve({ id: item._id }); toast.success("Đã duyệt!"); }}>
                           <CheckCircle className="w-4 h-4" />Duyệt
                         </button>
                       )}
                       {item.status !== "rejected" && (
-                        <button style={{ ...btnBase, background: "#dc2626", color: "#fff" }} onClick={async () => { await reject({ id: item._id }); toast.info("Đã từ chối."); }}>
+                        <button className="px-3 py-1.5 rounded-lg text-[13px] font-semibold bg-[#dc2626] text-white inline-flex items-center gap-1.5 hover:opacity-80 transition-opacity" onClick={async () => { await reject({ id: item._id }); toast.info("Đã từ chối."); }}>
                           <XCircle className="w-4 h-4" />Từ chối
                         </button>
                       )}
-                      <button style={{ ...btnBase, background: "transparent", color: "var(--color-danger)", border: "1px solid var(--color-danger)" }}
+                      <button className="px-3 py-1.5 rounded-lg text-[13px] font-semibold border border-[#944e4e] text-[#944e4e] inline-flex items-center gap-1.5 hover:bg-[#944e4e] hover:text-white transition-colors"
                         onClick={async () => { if (confirm("Xóa vĩnh viễn?")) { await remove({ id: item._id }); toast.success("Đã xóa."); } }}>
                         <Trash2 className="w-4 h-4" />
                       </button>
