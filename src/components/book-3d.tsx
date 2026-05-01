@@ -40,7 +40,7 @@ export function Book3D({ title, author, coverUrl, onClick, className = "" }: Boo
         </div>
 
         {/* Spine */}
-        <div className={`absolute top-0 bottom-0 left-0 w-4 origin-left -rotate-y-90 rounded-l-sm border-l-2 border-[#3d2b1f]/15 ${!coverUrl ? fallback : "bg-[#c9bfa9]"}`}>
+        <div className={`absolute top-0 bottom-0 left-0 w-4 origin-left -rotate-y-90 rounded-l-sm border-l-2 border-[#3d2b1f]/15 ${!coverUrl ? fallback : "bg-[#dcd7cc]"}`}>
           <div className="absolute inset-0 bg-gradient-to-b from-[#3d2b1f]/10 to-transparent pointer-events-none" />
         </div>
 

@@ -35,18 +35,18 @@ export default function SubmitPage() {
   };
 
   const inp = "w-full px-4 py-3 rounded-xl border border-[#3d2b1f]/10 bg-[#fdfaf6]/60 text-sm text-[#3d2b1f] outline-none focus:border-[#5a5a40] focus:ring-2 focus:ring-[#5a5a40]/15 transition-all placeholder:text-[#8e8a7d]/50";
-  const lbl = "block mb-2 text-[13px] font-semibold text-[#c9bfa9]/80 uppercase tracking-wider";
+  const lbl = "block mb-2 text-[13px] font-semibold text-[#5a5a40] uppercase tracking-wider";
 
   return (
     <main className="room-wrapper min-h-screen flex flex-col">
       <Navbar />
       <div className="max-w-2xl mx-auto w-full px-6 py-10 md:py-16">
-        <div className="bg-[#2a2520]/60 backdrop-blur-xl rounded-2xl p-8 md:p-10 shadow-2xl border border-[#fdfaf6]/6">
+        <div className="bg-white/70 backdrop-blur-xl rounded-2xl p-8 md:p-10 shadow-lg border border-[#e5e0d5]">
           <div className="flex items-center gap-3 mb-3">
-            <BookPlus className="w-7 h-7 text-[#c9bfa9]" />
-            <h1 className="text-3xl font-bold text-[#fdfaf6]">Gửi Tác Phẩm</h1>
+            <BookPlus className="w-7 h-7 text-[#5a5a40]" />
+            <h1 className="text-3xl font-bold text-[#3d2b1f]">Gửi Tác Phẩm</h1>
           </div>
-          <p className="mb-10 text-sm text-[#c9bfa9]/50" style={{ fontFamily: "'Inter',sans-serif" }}>
+          <p className="mb-10 text-sm text-[#8e8a7d]" style={{ fontFamily: "'Inter',sans-serif" }}>
             Gửi truyện/sách digital của bạn. Sau khi admin duyệt, tác phẩm sẽ xuất hiện tại Phòng Trưng Bày.
           </p>
           <form onSubmit={handleSubmit} className="space-y-6" style={{ fontFamily: "'Inter',sans-serif" }}>
@@ -62,7 +62,7 @@ export default function SubmitPage() {
             <div><label className={lbl}>Mô tả ngắn</label><textarea value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Tóm tắt..." rows={3} className={`${inp} resize-y`} /></div>
             <div>
               <label className={lbl}>Nội dung các trang *</label>
-              <p className="text-xs mb-3 text-[#c9bfa9]/40">Phân tách từng trang bằng <code className="bg-[#fdfaf6]/8 px-1.5 py-0.5 rounded text-[#c9bfa9]/70">---</code></p>
+              <p className="text-xs mb-3 text-[#8e8a7d]">Phân tách từng trang bằng <code className="bg-[#f2ede4] px-1.5 py-0.5 rounded text-[#5a5a40]">---</code></p>
               <textarea value={form.pagesText} onChange={(e) => set("pagesText", e.target.value)} placeholder={"Trang 1...\n---\nTrang 2..."} rows={10} className={`${inp} resize-y min-h-[200px]`} />
             </div>
             <button type="submit" disabled={loading}

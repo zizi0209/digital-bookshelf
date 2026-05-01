@@ -18,7 +18,7 @@
 * { box-sizing: border-box; margin: 0; }
 
 body {
-  background: #2a2520;
+  background: #f2ede4;
   color: #3d2b1f;
   font-family: 'Cormorant Garamond', Georgia, serif;
   min-height: 100vh;
@@ -40,8 +40,8 @@ body {
 /* ===== Immersive Room Wrapper ===== */
 .room-wrapper {
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(253,250,246,0.06) 0%, transparent 60%),
-    linear-gradient(180deg, #3a322c 0%, #2a2520 40%, #1f1b17 100%);
+    radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.5) 0%, transparent 60%),
+    linear-gradient(180deg, #fdfaf6 0%, #f5f0e6 40%, #f2ede4 100%);
   min-height: 100vh;
   position: relative;
 }
@@ -50,8 +50,8 @@ body {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(circle at 20% 30%, rgba(90,90,64,0.04) 0%, transparent 50%),
-    radial-gradient(circle at 80% 60%, rgba(148,78,78,0.03) 0%, transparent 50%);
+    radial-gradient(circle at 20% 30%, rgba(90,90,64,0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 60%, rgba(148,78,78,0.02) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
@@ -62,8 +62,8 @@ body {
 .shelf-wall {
   background:
     linear-gradient(180deg,
-      rgba(249,246,240,0.03) 0%,
-      rgba(242,237,228,0.02) 40%,
+      rgba(253,250,246,0.6) 0%,
+      rgba(249,246,240,0.3) 40%,
       transparent 100%);
   position: relative;
   min-height: 340px;
@@ -118,8 +118,8 @@ body {
   right: 0;
   height: 70%;
   background:
-    radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.15) 0%, transparent 60%),
-    linear-gradient(180deg, rgba(0,0,0,0.08) 0%, transparent 100%);
+    radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.06) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(0,0,0,0.03) 0%, transparent 100%);
   z-index: 0;
   pointer-events: none;
 }
@@ -147,9 +147,9 @@ body {
   position: relative;
   background: #f9f6f0;
   box-shadow:
-    4px 4px 14px rgba(0,0,0,0.35),
-    -1px 0 4px rgba(0,0,0,0.12),
-    inset -2px 0 8px rgba(0,0,0,0.06);
+    4px 4px 14px rgba(0,0,0,0.15),
+    -1px 0 4px rgba(0,0,0,0.06),
+    inset -2px 0 8px rgba(0,0,0,0.04);
 }
 .shelf-book-cover::after {
   content: "";
@@ -187,57 +187,57 @@ body {
 
 /* ===== Header bar — premium glassmorphism ===== */
 .bookshelf-header {
-  background: rgba(42,37,32,0.85);
+  background: rgba(253,250,246,0.85);
   backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(253,250,246,0.06);
+  border-bottom: 1px solid #e5e0d5;
   padding: 14px clamp(20px, 4vw, 64px);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  color: #fdfaf6;
+  color: #3d2b1f;
   font-family: 'Inter', sans-serif;
 }
 
 .bookshelf-search {
-  background: rgba(253,250,246,0.06);
-  border: 1px solid rgba(253,250,246,0.12);
+  background: rgba(255,255,255,0.6);
+  border: 1px solid #dcd7cc;
   border-radius: 10px;
   padding: 8px 14px 8px 36px;
-  color: #fdfaf6;
+  color: #3d2b1f;
   font-size: 13px;
   outline: none;
   width: 220px;
   transition: all 0.25s;
 }
 .bookshelf-search:focus {
-  border-color: rgba(253,250,246,0.35);
-  background: rgba(253,250,246,0.1);
-  box-shadow: 0 0 0 3px rgba(90,90,64,0.15);
+  border-color: #5a5a40;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(90,90,64,0.1);
 }
-.bookshelf-search::placeholder { color: rgba(253,250,246,0.3); }
+.bookshelf-search::placeholder { color: #8e8a7d; }
 
 .sort-btn {
-  background: rgba(253,250,246,0.05);
-  border: 1px solid rgba(253,250,246,0.1);
+  background: rgba(255,255,255,0.5);
+  border: 1px solid #dcd7cc;
   border-radius: 10px;
   padding: 7px 16px;
-  color: rgba(253,250,246,0.5);
+  color: #8e8a7d;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.25s;
   font-family: 'Inter', sans-serif;
 }
 .sort-btn:hover, .sort-btn.active {
-  background: rgba(253,250,246,0.15);
-  color: #fdfaf6;
-  border-color: rgba(253,250,246,0.2);
+  background: #fff;
+  color: #5a5a40;
+  border-color: #5a5a40;
 }
 
 /* ===== Ambient footer glow ===== */
 .shelf-floor {
   height: 80px;
-  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.15) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.03) 100%);
   position: relative;
 }
 .shelf-floor::before {
@@ -247,7 +247,7 @@ body {
   left: 10%;
   right: 10%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(253,250,246,0.06), transparent);
+  background: linear-gradient(90deg, transparent, #e5e0d5, transparent);
 }
 
 /* Responsive */
