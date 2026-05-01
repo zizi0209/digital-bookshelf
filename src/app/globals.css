@@ -13,6 +13,8 @@
   --color-border: #e5e0d5;
   --color-input: #dcd7cc;
   --color-ring: #5a5a40;
+  --font-serif: 'Noto Serif', Georgia, serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; }
@@ -20,7 +22,9 @@
 body {
   background: #f2ede4;
   color: #3d2b1f;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Noto Serif', Georgia, serif;
+  font-size: 18px;
+  line-height: 1.75;
   min-height: 100vh;
 }
 

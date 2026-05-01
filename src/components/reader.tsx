@@ -38,6 +38,9 @@ function usePageFlipSound() {
   }, []);
 }
 
+/* ---------- Normalize Vietnamese Unicode NFD → NFC ---------- */
+const nfc = (s: string) => s.normalize("NFC");
+
 /* ---------- Reader component ---------- */
 interface ReaderProps {
   title: string;
@@ -149,7 +152,7 @@ export function Reader({ title, author, genre, coverUrl, pages, onClose }: Reade
                     TRANG {idx + 1}
                   </span>
                 </div>
-                <div className="font-serif text-[#5c544d] leading-[1.8] text-base md:text-lg flex-1 overflow-hidden z-20 relative" dangerouslySetInnerHTML={{ __html: content.replace(/\\n/g, "<br/>") }} />
+                <div className="font-serif text-[#5c544d] leading-[1.8] text-base md:text-lg flex-1 overflow-hidden z-20 relative" dangerouslySetInnerHTML={{ __html: nfc(content).replace(/\\n/g, "<br/>") }} />
               </div>
             ))}
 
