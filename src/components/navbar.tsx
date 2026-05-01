@@ -18,7 +18,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-30 bg-[#1f1b17]/90 backdrop-blur-xl border-b border-[#fdfaf6]/5 shadow-2xl">
-      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 h-16 flex items-center justify-between">
+      <div className="w-full px-10 sm:px-14 lg:px-24 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2.5 text-xl font-bold tracking-tight text-[#fdfaf6]">
           <BookOpen className="w-5 h-5 text-[#c9bfa9]" />
           Tsuki<span className="font-light text-[#c9bfa9]/70">zoe</span>
