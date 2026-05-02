@@ -6,14 +6,7 @@ import { X, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import HTMLFlipBook from "react-pageflip";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Document, Page, pdfjs } from "react-pdf";
-import "react-pdf/dist/Page/AnnotationLayer.css";
-import "react-pdf/dist/Page/TextLayer.css";
-
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url,
-).toString();
+import { getPdfDoc, getPdfRatio, renderPdfPage, ratioCache } from "./pdf-cover";
 
 /* ---------- Page-flip sound ---------- */
 function usePageFlipSound() {
@@ -46,8 +39,7 @@ function usePageFlipSound() {
 
 const nfc = (s: string) => s.normalize("NFC");
 
-/* ---------- Viewport dims — nhận aspect ratio thực của sách ---------- */
-// ratio = width/height (0 = chưa biết, dùng 0.68 portrait)
+/* ---------- Dims — dùng ratio thực ---------- */
 function useDims(pageRatio = 0) {
   const [s, setS] = useState({ w: 500, h: 700, mobile: false });
   useEffect(() => {
@@ -55,19 +47,12 @@ function useDims(pageRatio = 0) {
     const calc = () => {
       const vw = window.innerWidth, vh = window.innerHeight;
       if (vw < 768) {
-        // Mobile: full width, height từ ratio
         const w = vw - 16;
-        const h = Math.min(Math.round(w / r), vh - 80);
-        setS({ w, h, mobile: true });
+        setS({ w, h: Math.min(Math.round(w / r), vh - 80), mobile: true });
       } else {
-        // Desktop: ưu tiên chiều cao viewport, width từ ratio
-        const maxH = vh - 60;
-        const maxW = Math.floor((vw - 80) / 2); // mỗi trang chiếm nửa book width
-        // Với sách ngang: maxW có thể là bottleneck
-        const hFromW = Math.round(maxW / r);
-        const h = Math.min(maxH, hFromW);
-        const w = Math.round(h * r);
-        setS({ w, h, mobile: false });
+        const maxH = vh - 60, maxW = Math.floor((vw - 80) / 2);
+        const h = Math.min(maxH, Math.round(maxW / r));
+        setS({ w: Math.round(h * r), h, mobile: false });
       }
     };
     calc(); window.addEventListener("resize", calc);
@@ -76,14 +61,12 @@ function useDims(pageRatio = 0) {
   return s;
 }
 
-/* ---------- Shared FlipBook Shell ---------- */
+/* ---------- FlipBook Shell ---------- */
 interface ShellProps {
-  title: string; author?: string; coverUrl?: string;
-  onClose: () => void;
+  title: string; author?: string; coverUrl?: string; onClose: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   bookRef: React.RefObject<any>;
-  w: number; h: number; mobile: boolean;
-  onFlip: () => void;
+  w: number; h: number; mobile: boolean; onFlip: () => void;
   children: React.ReactNode;
 }
 function FlipBookShell({ title, author, coverUrl, onClose, bookRef, w, h, mobile, onFlip, children }: ShellProps) {
@@ -106,11 +89,11 @@ function FlipBookShell({ title, author, coverUrl, onClose, bookRef, w, h, mobile
             <ChevronRight className="w-8 h-8" />
           </button>
         </div>
-
         <div className="shadow-2xl rounded-sm">
           {/* @ts-expect-error react-pageflip typings */}
-          <HTMLFlipBook width={w} height={h} size="fixed" maxShadowOpacity={0.5} showCover mobileScrollSupport
-            onFlip={onFlip} className="html-book" ref={bookRef} flippingTime={800} usePortrait={mobile} useMouseEvents style={{ margin: "0 auto" }}>
+          <HTMLFlipBook width={w} height={h} size="fixed" maxShadowOpacity={0.5} showCover
+            mobileScrollSupport onFlip={onFlip} className="html-book" ref={bookRef}
+            flippingTime={800} usePortrait={mobile} useMouseEvents style={{ margin: "0 auto" }}>
             {/* Bìa trước */}
             <div className="demoPage bg-[#fdfaf6] border border-[#dcd7cc] flex flex-col justify-center items-center overflow-hidden shadow-[inset_-20px_0_40px_rgba(0,0,0,0.05)]">
               {coverUrl
@@ -143,7 +126,11 @@ function FlipBookShell({ title, author, coverUrl, onClose, bookRef, w, h, mobile
 }
 
 /* ==========================================================
-   PDF Flip Reader
+   PDF Reader — Không dùng react-pdf, dùng trực tiếp pdfjs
+   cache dùng chung với cover trên kệ sách
+   - Load doc → lấy numPages + ratio ngay (không render)
+   - Render trang 1, 2, 3... tuần tự
+   - Flipbook hiện ngay khi có ratio + numPages
    ========================================================== */
 function PdfFlipReader({ url, title, author, coverUrl, onClose }: {
   url: string; title: string; author?: string; coverUrl?: string; onClose: () => void;
@@ -151,86 +138,64 @@ function PdfFlipReader({ url, title, author, coverUrl, onClose }: {
   const playFlip = usePageFlipSound();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const bookRef = useRef<any>(null);
+
+  // Dùng ratio đã cache từ lúc xem bìa trên kệ (instant nếu đã load)
+  const [ratio, setRatio] = useState(() => ratioCache.get(url) ?? 0);
   const [numPages, setNumPages] = useState(0);
-  const [pageImages, setPageImages] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [pageRatio, setPageRatio] = useState(0); // ratio từ trang 1 PDF
+  const [pageImages, setPageImages] = useState<(string | null)[]>([]);
 
-  const { w, h, mobile } = useDims(pageRatio);
+  const { w, h, mobile } = useDims(ratio);
 
-  const onDocLoad = useCallback(({ numPages: n }: { numPages: number }) => setNumPages(n), []);
-
-  const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
   useEffect(() => {
-    if (numPages === 0) return;
-    pageRefs.current = Array.from({ length: numPages }, () => null);
-  }, [numPages]);
+    let cancelled = false;
 
-  const capturePages = useCallback(async () => {
-    if (pageRefs.current.some((r) => !r)) return;
-    const imgs: string[] = [];
-    for (const [i, div] of pageRefs.current.entries()) {
-      const canvas = div?.querySelector("canvas");
-      if (canvas) {
-        if (i === 0 && canvas.width > 0 && canvas.height > 0) {
-          setPageRatio(canvas.width / canvas.height);
-        }
-        imgs.push(canvas.toDataURL("image/jpeg", 0.88));
-      } else {
-        imgs.push("");
+    async function load() {
+      // Bước 1: Load doc (có thể đã cache từ cover)
+      const doc = await getPdfDoc(url);
+      const n = doc.numPages;
+
+      // Bước 2: Lấy ratio ngay (không render)
+      const r = await getPdfRatio(url);
+      if (!cancelled) { setRatio(r); setNumPages(n); setPageImages(Array.from({ length: n }, () => null)); }
+
+      // Bước 3: Render trang 1 → 2 → 3... tuần tự
+      for (let i = 0; i < n; i++) {
+        if (cancelled) break;
+        const img = await renderPdfPage(url, i + 1, 650);
+        if (!cancelled) setPageImages((prev) => { const next = [...prev]; next[i] = img; return next; });
       }
     }
-    setPageImages(imgs);
-    setLoading(false);
-  }, []);
 
-  const [renderedCount, setRenderedCount] = useState(0);
-  const handlePageRender = useCallback(() => {
-    setRenderedCount((c) => {
-      const next = c + 1;
-      if (next >= numPages) void capturePages();
-      return next;
-    });
-  }, [numPages, capturePages]);
+    load().catch(() => {});
+    return () => { cancelled = true; };
+  }, [url]);
+
+  if (numPages === 0)
+    return (
+      <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/80 gap-4">
+        <Loader2 className="w-10 h-10 text-white animate-spin" />
+        <p className="text-white/70 text-sm">Đang tải…</p>
+      </div>
+    );
 
   return (
-    <>
-      {/* Render ẩn để capture canvas */}
-      {numPages === 0 || loading ? (
-        <div style={{ position: "absolute", opacity: 0, pointerEvents: "none", top: -9999, left: -9999 }}>
-          <Document file={url} onLoadSuccess={onDocLoad}>
-            {Array.from({ length: numPages }, (_, i) => (
-              <div key={i} ref={(el) => { pageRefs.current[i] = el; }}>
-                <Page pageNumber={i + 1} width={800} onRenderSuccess={handlePageRender} renderAnnotationLayer={false} renderTextLayer={false} />
-              </div>
-            ))}
-          </Document>
+    <FlipBookShell title={title} author={author} coverUrl={coverUrl ?? pageImages[0] ?? undefined}
+      onClose={onClose} bookRef={bookRef} w={w} h={h} mobile={mobile} onFlip={playFlip}>
+      {pageImages.slice(1).map((src, idx) => (
+        <div key={idx} className="demoPage bg-[#fdfaf6] border border-[#f0ebe1] relative overflow-hidden flex items-center justify-center">
+          {src
+            ? <img src={src} alt={`Trang ${idx + 2}`} className="w-full h-full object-contain" />
+            : <Loader2 className="w-7 h-7 text-[#dcd7cc] animate-spin" />
+          }
+          <div className={`absolute inset-y-0 ${idx % 2 === 0 ? "right-0 w-6 bg-gradient-to-l" : "left-0 w-6 bg-gradient-to-r"} from-black/10 to-transparent pointer-events-none`} />
         </div>
-      ) : null}
-
-      {loading ? (
-        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/80 gap-4">
-          <Loader2 className="w-10 h-10 text-white animate-spin" />
-          <p className="text-white/70 text-sm">
-            {numPages === 0 ? "Đang tải PDF…" : `Đang xử lý trang (${renderedCount}/${numPages})…`}
-          </p>
-        </div>
-      ) : (
-        <FlipBookShell title={title} author={author} coverUrl={coverUrl ?? pageImages[0]} onClose={onClose} bookRef={bookRef} w={w} h={h} mobile={mobile} onFlip={playFlip}>
-          {pageImages.slice(1).map((src, idx) => (
-            <div key={idx} className="demoPage bg-[#fdfaf6] border border-[#f0ebe1] relative overflow-hidden">
-              {src && <img src={src} alt={`Trang ${idx + 2}`} className="w-full h-full object-contain" />}
-              <div className={`absolute inset-y-0 ${idx % 2 === 0 ? "right-0 w-6 bg-gradient-to-l" : "left-0 w-6 bg-gradient-to-r"} from-black/10 to-transparent pointer-events-none`} />
-            </div>
-          ))}
-        </FlipBookShell>
-      )}
-    </>
+      ))}
+    </FlipBookShell>
   );
 }
 
 /* ==========================================================
-   EPUB — hiển thị qua iframe
+   EPUB
    ========================================================== */
 function EpubReader({ url, title, onClose }: { url: string; title: string; onClose: () => void }) {
   return (
@@ -247,7 +212,7 @@ function EpubReader({ url, title, onClose }: { url: string; title: string; onClo
 }
 
 /* ==========================================================
-   File wrapper — lấy URL từ Convex rồi dispatch tới viewer
+   File wrapper
    ========================================================== */
 function FileFlipReader({ storageId, fileType, title, author, coverUrl, source, onClose }: {
   storageId: string; fileType: string; title: string; author?: string;
@@ -262,10 +227,9 @@ function FileFlipReader({ storageId, fileType, title, author, coverUrl, source, 
     return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80">
         <Loader2 className="w-8 h-8 text-white animate-spin mr-3" />
-        <p className="text-white/70 text-sm">Đang tải tệp…</p>
+        <p className="text-white/70 text-sm">Đang lấy tệp…</p>
       </div>
     );
-
   if (!fileUrl)
     return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80">
@@ -273,15 +237,12 @@ function FileFlipReader({ storageId, fileType, title, author, coverUrl, source, 
         <button onClick={onClose} className="text-white/60 hover:text-white text-sm underline">Đóng</button>
       </div>
     );
-
-  if (fileType === "epub")
-    return <EpubReader url={fileUrl} title={title} onClose={onClose} />;
-
+  if (fileType === "epub") return <EpubReader url={fileUrl} title={title} onClose={onClose} />;
   return <PdfFlipReader url={fileUrl} title={title} author={author} coverUrl={coverUrl} onClose={onClose} />;
 }
 
 /* ==========================================================
-   Public Reader — entry point
+   Public API
    ========================================================== */
 export interface ReaderProps {
   title: string; author?: string; genre?: string; coverUrl?: string;
@@ -294,16 +255,13 @@ export interface ReaderProps {
 export function Reader({ title, author, genre, coverUrl, pages, fileStorageId, fileType, onClose, source = "books" }: ReaderProps) {
   if (fileStorageId && fileType)
     return <FileFlipReader storageId={fileStorageId} fileType={fileType} title={title} author={author} coverUrl={coverUrl} source={source} onClose={onClose} />;
-
   return <TextFlipReader title={title} author={author} genre={genre} coverUrl={coverUrl} pages={pages} onClose={onClose} />;
 }
 
-/* ==========================================================
-   Text Flip Reader
-   ========================================================== */
+/* ---------- Text Reader ---------- */
 function TextFlipReader({ title, author, genre, coverUrl, pages, onClose }: Omit<ReaderProps, "fileStorageId" | "fileType" | "source">) {
   const playFlip = usePageFlipSound();
-  const { w, h, mobile } = useDims(); // text pages: portrait chuẩn
+  const { w, h, mobile } = useDims();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const bookRef = useRef<any>(null);
   return (

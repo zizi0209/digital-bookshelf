@@ -4,94 +4,132 @@ import { useEffect, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
-interface CoverData { dataUrl: string; ratio: number; } // ratio = width/height
+// ---------- Worker init (một lần) ----------
+let workerReady = false;
+async function getPdfjsLib() {
+  const lib = await import("pdfjs-dist");
+  if (!workerReady) {
+    lib.GlobalWorkerOptions.workerSrc = new URL(
+      "pdfjs-dist/build/pdf.worker.min.mjs",
+      import.meta.url,
+    ).toString();
+    workerReady = true;
+  }
+  return lib;
+}
 
-const coverCache = new Map<string, CoverData>();
+// ---------- Cache PDFDocumentProxy (dùng chung cho cover + reader) ----------
+type PdfDoc = Awaited<ReturnType<Awaited<ReturnType<typeof getPdfjsLib>>["getDocument"]>["promise"]>;
+const docCache = new Map<string, Promise<PdfDoc>>();
 
-async function renderFirstPage(url: string): Promise<CoverData> {
-  const pdfjsLib = await import("pdfjs-dist");
-  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-    "pdfjs-dist/build/pdf.worker.min.mjs",
-    import.meta.url,
-  ).toString();
+export function getPdfDoc(url: string): Promise<PdfDoc> {
+  if (!docCache.has(url)) {
+    const p = getPdfjsLib().then((lib) =>
+      lib.getDocument({ url, disableStream: false, rangeChunkSize: 65536 }).promise,
+    );
+    docCache.set(url, p);
+  }
+  return docCache.get(url)!;
+}
 
-  const pdf = await pdfjsLib.getDocument({ url, disableStream: true }).promise;
-  const page = await pdf.getPage(1);
-  const viewport = page.getViewport({ scale: 1.5 });
+// ---------- Ratio cache (width/height trang 1) ----------
+export const ratioCache = new Map<string, number>();
+
+export async function getPdfRatio(url: string): Promise<number> {
+  if (ratioCache.has(url)) return ratioCache.get(url)!;
+  const doc = await getPdfDoc(url);
+  const page = await doc.getPage(1);
+  const vp = page.getViewport({ scale: 1 });
+  const r = vp.width / vp.height;
+  ratioCache.set(url, r);
+  return r;
+}
+
+// ---------- Render trang thành ảnh (dùng doc cache) ----------
+const pageImgCache = new Map<string, string>(); // key: `${url}:${pageNum}:${width}`
+
+export async function renderPdfPage(url: string, pageNum: number, width: number): Promise<string> {
+  const key = `${url}:${pageNum}:${width}`;
+  if (pageImgCache.has(key)) return pageImgCache.get(key)!;
+
+  const doc = await getPdfDoc(url);
+  const page = await doc.getPage(pageNum);
+  const baseVp = page.getViewport({ scale: 1 });
+  const scale = width / baseVp.width;
+  const vp = page.getViewport({ scale });
   const canvas = document.createElement("canvas");
-  canvas.width = viewport.width;
-  canvas.height = viewport.height;
-  const ctx = canvas.getContext("2d")!;
-  await page.render({ canvasContext: ctx, viewport, canvas } as Parameters<typeof page.render>[0]).promise;
-  return { dataUrl: canvas.toDataURL("image/jpeg", 0.85), ratio: viewport.width / viewport.height };
+  canvas.width = vp.width; canvas.height = vp.height;
+  await page.render({ canvasContext: canvas.getContext("2d")!, viewport: vp, canvas } as Parameters<typeof page.render>[0]).promise;
+  const img = canvas.toDataURL("image/jpeg", pageNum === 1 ? 0.88 : 0.82);
+  pageImgCache.set(key, img);
+  return img;
 }
 
-export function usePdfCover(url: string | null | undefined): string | null {
-  const [dataUrl, setDataUrl] = useState<string | null>(() =>
-    url ? (coverCache.get(url)?.dataUrl ?? null) : null
-  );
-
+// ---------- Cover hook (dùng renderPdfPage) ----------
+export function usePdfCover(url: string | null | undefined, enabled = true): string | null {
+  const [img, setImg] = useState<string | null>(null);
   useEffect(() => {
-    if (!url) return;
-    const cached = coverCache.get(url);
-    if (cached) { setDataUrl(cached.dataUrl); return; }
+    if (!url || !enabled) return;
+    const key = `${url}:1:520`;
+    if (pageImgCache.has(key)) { setImg(pageImgCache.get(key)!); return; }
     let cancelled = false;
-    renderFirstPage(url).then((data) => {
-      if (cancelled) return;
-      coverCache.set(url, data);
-      setDataUrl(data.dataUrl);
-    }).catch(() => { /* silent */ });
+    renderPdfPage(url, 1, 520).then((i) => { if (!cancelled) setImg(i); }).catch(() => {});
     return () => { cancelled = true; };
-  }, [url]);
-
-  return dataUrl;
+  }, [url, enabled]);
+  return img;
 }
 
-// Trả aspect ratio (width/height) của trang 1 PDF, mặc định 0.68 (portrait chuẩn)
-export function usePdfAspectRatio(url: string | null | undefined): number {
-  const [ratio, setRatio] = useState<number>(() =>
-    url ? (coverCache.get(url)?.ratio ?? 0) : 0
-  );
-
+// ---------- Ratio hook (nhanh — không cần render) ----------
+export function usePdfRatio(url: string | null | undefined, enabled = true): number {
+  const [ratio, setRatio] = useState<number>(() => (url ? (ratioCache.get(url) ?? 0) : 0));
   useEffect(() => {
-    if (!url) return;
-    const cached = coverCache.get(url);
-    if (cached) { setRatio(cached.ratio); return; }
+    if (!url || !enabled) return;
+    if (ratioCache.has(url)) { setRatio(ratioCache.get(url)!); return; }
     let cancelled = false;
-    renderFirstPage(url).then((data) => {
-      if (cancelled) return;
-      coverCache.set(url, data);
-      setRatio(data.ratio);
-    }).catch(() => { /* silent */ });
+    getPdfRatio(url).then((r) => { if (!cancelled) setRatio(r); }).catch(() => {});
     return () => { cancelled = true; };
-  }, [url]);
-
-  return ratio; // 0 = chưa biết
+  }, [url, enabled]);
+  return ratio;
 }
 
+// ---------- IntersectionObserver lazy trigger ----------
+export function useIsInViewport(ref: React.RefObject<HTMLElement | null>): boolean {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
+    }, { rootMargin: "200px" });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [ref]);
+  return visible;
+}
+
+// ---------- Storage hooks ----------
 export function useCoverFromStorage(
   fileStorageId: string | undefined,
   fileType: string | undefined,
   source: "books" | "gallery",
+  enabled = true,
 ): string | null {
   const fileUrl = useQuery(
     source === "books" ? api.books.getFileUrl : api.gallery.getFileUrl,
-    fileStorageId ? { storageId: fileStorageId } : "skip",
+    fileStorageId && enabled ? { storageId: fileStorageId } : "skip",
   );
-  const isPdf = fileType === "pdf";
-  return usePdfCover(isPdf && fileUrl ? fileUrl : null);
+  return usePdfCover(fileType === "pdf" && fileUrl && enabled ? fileUrl : null, enabled);
 }
 
-// Trả ratio từ storageId — dùng cho shelf/book-3d
 export function useAspectRatioFromStorage(
   fileStorageId: string | undefined,
   fileType: string | undefined,
   source: "books" | "gallery",
+  enabled = true,
 ): number {
   const fileUrl = useQuery(
     source === "books" ? api.books.getFileUrl : api.gallery.getFileUrl,
-    fileStorageId ? { storageId: fileStorageId } : "skip",
+    fileStorageId && enabled ? { storageId: fileStorageId } : "skip",
   );
-  const isPdf = fileType === "pdf";
-  return usePdfAspectRatio(isPdf && fileUrl ? fileUrl : null);
+  return usePdfRatio(fileType === "pdf" && fileUrl && enabled ? fileUrl : null, enabled);
 }

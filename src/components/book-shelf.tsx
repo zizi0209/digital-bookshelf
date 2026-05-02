@@ -1,11 +1,11 @@
 "use client";
 
+import { useRef } from "react";
 import Image from "next/image";
-import { useCoverFromStorage, useAspectRatioFromStorage } from "./pdf-cover";
+import { useCoverFromStorage, useAspectRatioFromStorage, useIsInViewport } from "./pdf-cover";
 
 const COLORS = ["#6b5d50", "#5a5a40", "#7d5a5a", "#5c544d", "#8a7d6b", "#6b6b4e", "#7a6852"];
 
-// Chiều cao chuẩn (px) — width sẽ tính từ ratio
 const BASE_H = 185;
 const BASE_H_MD = 150;
 const BASE_H_SM = 115;
@@ -22,11 +22,13 @@ interface ShelfBookProps {
 }
 
 function ShelfBookInner({ title, author, coverUrl, fileStorageId, fileType, source = "books", onClick, delay = 0 }: ShelfBookProps) {
-  const extractedCover = useCoverFromStorage(fileStorageId, fileType, source);
-  const storedRatio = useAspectRatioFromStorage(fileStorageId, fileType, source);
+  const ref = useRef<HTMLDivElement>(null);
+  const visible = useIsInViewport(ref); // lazy: chỉ load khi vào viewport
+
+  const extractedCover = useCoverFromStorage(fileStorageId, fileType, source, visible);
+  const storedRatio = useAspectRatioFromStorage(fileStorageId, fileType, source, visible);
   const displayCover = coverUrl ?? extractedCover;
 
-  // ratio = width/height — 0 khi chưa biết → dùng portrait chuẩn
   const ratio = storedRatio || 0.68;
   const w = Math.round(BASE_H * ratio);
 
@@ -34,11 +36,10 @@ function ShelfBookInner({ title, author, coverUrl, fileStorageId, fileType, sour
   const fallbackColor = COLORS[hash % COLORS.length];
 
   return (
-    <div className="shelf-book animate-fadeInUp" onClick={onClick} style={{ animationDelay: `${delay}ms` }}>
+    <div ref={ref} className="shelf-book animate-fadeInUp" onClick={onClick} style={{ animationDelay: `${delay}ms` }}>
       <div
         className="shelf-book-cover"
         style={{
-          // CSS vars để responsive media queries có thể dùng var()
           "--book-w": `${w}px`,
           "--book-h": `${BASE_H}px`,
           "--book-w-md": `${Math.round(BASE_H_MD * ratio)}px`,

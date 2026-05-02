@@ -1,8 +1,9 @@
 "use client";
 
+import { useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useCoverFromStorage, useAspectRatioFromStorage } from "./pdf-cover";
+import { useCoverFromStorage, useAspectRatioFromStorage, useIsInViewport } from "./pdf-cover";
 
 const COLORS = ["bg-[#7d6b5d]", "bg-[#5a5a40]", "bg-[#944e4e]", "bg-[#6b5a48]", "bg-[#8a7d6b]"];
 const BASE_H = 192; // px — chiều cao cố định, width tính từ ratio
@@ -19,8 +20,11 @@ interface Book3DProps {
 }
 
 export function Book3D({ title, author, coverUrl, fileStorageId, fileType, source = "books", onClick, className = "" }: Book3DProps) {
-  const extractedCover = useCoverFromStorage(fileStorageId, fileType, source);
-  const storedRatio = useAspectRatioFromStorage(fileStorageId, fileType, source);
+  const ref = useRef<HTMLDivElement>(null);
+  const visible = useIsInViewport(ref);
+
+  const extractedCover = useCoverFromStorage(fileStorageId, fileType, source, visible);
+  const storedRatio = useAspectRatioFromStorage(fileStorageId, fileType, source, visible);
   const displayCover = coverUrl ?? extractedCover;
   const hash = title.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
   const fallback = COLORS[hash % COLORS.length];
@@ -30,6 +34,7 @@ export function Book3D({ title, author, coverUrl, fileStorageId, fileType, sourc
 
   return (
     <div
+      ref={ref}
       className={`perspective-1000 cursor-pointer group ${className}`}
       style={{ width: w, height: BASE_H }}
       onClick={onClick}
