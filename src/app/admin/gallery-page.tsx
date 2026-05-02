@@ -52,7 +52,9 @@ function PendingTab() {
       )}
       <AnimatePresence>
         {preview && <Reader title={preview.title} author={preview.authorName} genre={preview.genre}
-          coverUrl={preview.coverUrl} pages={preview.pages ?? []} onClose={() => setPreview(null)} />}
+          coverUrl={preview.coverUrl} pages={preview.pages ?? []}
+          fileStorageId={preview.fileStorageId} fileType={preview.fileType}
+          source="gallery" onClose={() => setPreview(null)} />}
       </AnimatePresence>
     </>
   );
@@ -103,7 +105,9 @@ function ReviewTab() {
       )}
       <AnimatePresence>
         {preview && <Reader title={preview.title} author={preview.authorName} genre={preview.genre}
-          coverUrl={preview.coverUrl} pages={preview.pages ?? []} onClose={() => setPreview(null)} />}
+          coverUrl={preview.coverUrl} pages={preview.pages ?? []}
+          fileStorageId={preview.fileStorageId} fileType={preview.fileType}
+          source="gallery" onClose={() => setPreview(null)} />}
       </AnimatePresence>
     </>
   );
