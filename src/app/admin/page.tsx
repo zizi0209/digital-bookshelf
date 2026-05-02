@@ -40,9 +40,7 @@ function UploadBookTab() {
   const generateUrl = useMutation(api.books.generateUploadUrl);
   const createBook = useMutation(api.books.create);
 
-  const [form, setForm] = useState({
-    title: "", description: "", genre: "fantasy", coverUrl: "", isFeatured: false,
-  });
+  const [form, setForm] = useState({ title: "", description: "", genre: "fantasy" });
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -60,7 +58,7 @@ function UploadBookTab() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title || !form.description || !form.genre) {
+    if (!form.title || !form.genre) {
       toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
@@ -85,15 +83,13 @@ function UploadBookTab() {
         title: form.title,
         description: form.description,
         genre: form.genre,
-        coverUrl: form.coverUrl || undefined,
         fileStorageId: storageId,
         fileType: ext,
         fileName: file.name,
-        isFeatured: form.isFeatured,
       });
 
       toast.success("Đã đăng tải tác phẩm thành công!");
-      setForm({ title: "", description: "", genre: "fantasy", coverUrl: "", isFeatured: false });
+      setForm({ title: "", description: "", genre: "fantasy" });
       setFile(null);
       if (fileRef.current) fileRef.current.value = "";
     } catch (err) {
@@ -127,7 +123,7 @@ function UploadBookTab() {
           </select>
         </div>
         <div className="form-field full">
-          <label>Mô tả *</label>
+          <label>Mô tả</label>
           <textarea
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
@@ -136,26 +132,7 @@ function UploadBookTab() {
             disabled={uploading}
           />
         </div>
-        <div className="form-field">
-          <label>URL ảnh bìa <span className="opt">(tuỳ chọn)</span></label>
-          <input
-            value={form.coverUrl}
-            onChange={(e) => setForm((f) => ({ ...f, coverUrl: e.target.value }))}
-            placeholder="https://..."
-            disabled={uploading}
-          />
-        </div>
-        <div className="form-field center-v">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={form.isFeatured}
-              onChange={(e) => setForm((f) => ({ ...f, isFeatured: e.target.checked }))}
-              disabled={uploading}
-            />
-            <span>Nổi bật (Featured)</span>
-          </label>
-        </div>
+
       </div>
 
       <div className="file-drop-area" onClick={() => !uploading && fileRef.current?.click()}>
@@ -367,9 +344,7 @@ function AdminDashboard({ email, onLogout }: { email: string; onLogout: () => vo
         .upload-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         @media (max-width: 600px) { .upload-form-grid { grid-template-columns: 1fr; } }
         .form-field.full { grid-column: 1 / -1; }
-        .form-field.center-v { display: flex; align-items: center; }
         .form-field label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 6px; font-weight: 500; }
-        .form-field .opt { font-weight: 400; color: #475569; font-size: 12px; }
         .form-field input, .form-field select, .form-field textarea {
           width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
           border-radius: 10px; padding: 10px 14px; color: #e2e8f0; font-size: 14px;
@@ -380,8 +355,6 @@ function AdminDashboard({ email, onLogout }: { email: string; onLogout: () => vo
         }
         .form-field select option { background: #1e293b; }
         .form-field textarea { resize: vertical; }
-        .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: #94a3b8; font-size: 14px; }
-        .checkbox-label input[type=checkbox] { width: 16px; height: 16px; accent-color: #60a5fa; cursor: pointer; }
 
         .file-drop-area {
           border: 2px dashed rgba(255,255,255,0.12); border-radius: 14px;
