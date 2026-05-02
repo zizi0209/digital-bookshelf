@@ -4,9 +4,43 @@ import { api } from "../../../convex/_generated/api";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import {
-  Upload, FilePlus, Search, Eye, EyeOff, Trash2, BookOpen,
+  Upload, FilePlus, Search, Eye, EyeOff, Trash2, BookOpen, X, FileText,
 } from "lucide-react";
 import type { Id } from "../../../convex/_generated/dataModel";
+
+type BookPreview = { title: string; storageId: string; fileType?: string };
+
+// ─── File Viewer Modal ────────────────────────────────────────────────────────
+function FileViewerModal({ book, onClose }: { book: BookPreview; onClose: () => void }) {
+  const url = useQuery(api.books.getFileUrl, { storageId: book.storageId });
+  const isPdf = book.fileType === "pdf";
+
+  return (
+    <div className="fv-overlay" onClick={onClose}>
+      <div className="fv-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="fv-header">
+          <span className="fv-title"><FileText size={15} />{book.title}</span>
+          <button className="fv-close" onClick={onClose}><X size={18} /></button>
+        </div>
+        <div className="fv-body">
+          {url === undefined ? (
+            <div className="fv-loading"><span className="spin-icon" />Đang tải...</div>
+          ) : !url ? (
+            <div className="fv-empty">Không lấy được URL file.</div>
+          ) : isPdf ? (
+            <iframe src={url} className="fv-iframe" title={book.title} />
+          ) : (
+            <div className="fv-epub-note">
+              <FileText size={48} style={{ color: "#6366f1", marginBottom: 16 }} />
+              <p>File EPUB không thể xem trực tiếp trên trình duyệt.</p>
+              <a href={url} download className="fv-download">Tải xuống để đọc</a>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const GENRES = [
   { value: "fantasy",      label: "Tiểu thuyết kỳ ảo" },
@@ -112,6 +146,7 @@ function UploadTab() {
 function ManageTab() {
   const [search, setSearch] = useState("");
   const [genre,  setGenre]  = useState("");
+  const [preview, setPreview] = useState<BookPreview | null>(null);
   const toggleHidden = useMutation(api.books.toggleHidden);
   const remove       = useMutation(api.books.remove);
 
@@ -155,6 +190,13 @@ function ManageTab() {
                   {book.description && <p className="item-desc">{book.description}</p>}
                 </div>
                 <div className="item-actions">
+                  <button className="action-btn"
+                    onClick={() => book.fileStorageId
+                      ? setPreview({ title: book.title, storageId: book.fileStorageId, fileType: book.fileType })
+                      : toast.info("Tác phẩm này chưa có file.")}
+                  >
+                    <Eye size={14} />Xem
+                  </button>
                   <button className={`action-btn ${book.isHidden ? "show" : "hide"}`}
                     onClick={async () => {
                       await toggleHidden({ id: book._id as Id<"books"> });
@@ -172,6 +214,7 @@ function ManageTab() {
           ))}
         </div>
       )}
+      {preview && <FileViewerModal book={preview} onClose={() => setPreview(null)} />}
     </>
   );
 }
@@ -309,6 +352,46 @@ export function BooksPage() {
         .action-btn.show:hover { background: rgba(52,211,153,0.18); }
         .action-btn.danger { background: transparent; border-color: rgba(248,113,113,0.15); color: rgba(248,113,113,0.5); padding: 7px 10px; }
         .action-btn.danger:hover { background: rgba(248,113,113,0.12); color: #f87171; }
+
+        /* File viewer modal */
+        .fv-overlay {
+          position: fixed; inset: 0; z-index: 60;
+          background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
+          display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .fv-modal {
+          background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 16px; width: 100%; max-width: 900px;
+          height: 85vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+        .fv-header {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;
+        }
+        .fv-title { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #e2e8f0; }
+        .fv-close {
+          background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 8px; padding: 6px; color: #94a3b8; cursor: pointer; display: flex;
+          transition: background 0.2s;
+        }
+        .fv-close:hover { background: rgba(255,255,255,0.12); color: #e2e8f0; }
+        .fv-body { flex: 1; overflow: hidden; }
+        .fv-iframe { width: 100%; height: 100%; border: none; background: #fff; }
+        .fv-loading, .fv-empty {
+          height: 100%; display: flex; align-items: center; justify-content: center;
+          gap: 10px; color: #64748b; font-size: 14px;
+        }
+        .fv-epub-note {
+          height: 100%; display: flex; flex-direction: column; align-items: center;
+          justify-content: center; color: #64748b; font-size: 14px; text-align: center;
+        }
+        .fv-epub-note p { margin: 0 0 20px; }
+        .fv-download {
+          padding: 10px 24px; border-radius: 10px; background: linear-gradient(135deg,#6366f1,#3b82f6);
+          color: #fff; font-size: 14px; font-weight: 600; text-decoration: none;
+          transition: opacity 0.2s;
+        }
+        .fv-download:hover { opacity: 0.85; }
       `}</style>
     </div>
   );
