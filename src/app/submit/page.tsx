@@ -30,7 +30,7 @@ export default function SubmitPage() {
     if (!f) return;
     const ext = f.name.split(".").pop()?.toLowerCase();
     if (ext !== "pdf" && ext !== "epub") { toast.error("Chỉ chấp nhận file .pdf hoặc .epub"); return; }
-    if (f.size > 50 * 1024 * 1024) { toast.error("File tối đa 50MB"); return; }
+    if (f.size > 100 * 1024 * 1024) { toast.error("File tối đa 100MB"); return; }
     setFile(f);
   };
 
@@ -88,7 +88,7 @@ export default function SubmitPage() {
 
             {/* File upload */}
             <div>
-              <label className={lbl}>File sách * <span className="text-[#8e8a7d] normal-case font-normal">(PDF hoặc EPUB, tối đa 50MB)</span></label>
+              <label className={lbl}>File sách * <span className="text-[#8e8a7d] normal-case font-normal">(PDF hoặc EPUB, tối đa 100MB)</span></label>
               <input ref={fileRef} type="file" accept={ACCEPTED} className="hidden" onChange={(e) => pickFile(e.target.files?.[0] ?? null)} />
               {file ? (
                 <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#5a5a40]/30 bg-[#f5f2ea]">
@@ -108,7 +108,7 @@ export default function SubmitPage() {
                 >
                   <UploadCloud className="w-10 h-10 text-[#5a5a40]/60" />
                   <p className="text-sm text-[#5a5a40] font-medium">Kéo thả hoặc nhấn để chọn file</p>
-                  <p className="text-xs text-[#8e8a7d]">.pdf, .epub — tối đa 50 MB</p>
+                  <p className="text-xs text-[#8e8a7d]">.pdf, .epub — tối đa 100 MB</p>
                 </div>
               )}
             </div>
