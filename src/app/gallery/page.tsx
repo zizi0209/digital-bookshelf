@@ -58,6 +58,7 @@ export default function GalleryPage() {
         <BookshelfGrid items={filtered as GalleryDoc[]} perRow={5}
           renderBook={(item, i) => (
             <ShelfBook key={item._id} title={item.title} author={item.authorName} coverUrl={item.coverUrl}
+              fileStorageId={item.fileStorageId} fileType={item.fileType} source="gallery"
               onClick={() => setSelected(item as unknown as GalleryDoc)} delay={i * 40} />
           )} />
       )}

@@ -203,10 +203,10 @@ function PdfFlipReader({ url, title, author, coverUrl, onClose }: {
           </p>
         </div>
       ) : (
-        <FlipBookShell title={title} author={author} coverUrl={coverUrl} onClose={onClose} bookRef={bookRef} w={w} h={h} mobile={mobile} onFlip={playFlip}>
-          {pageImages.map((src, idx) => (
+        <FlipBookShell title={title} author={author} coverUrl={coverUrl ?? pageImages[0]} onClose={onClose} bookRef={bookRef} w={w} h={h} mobile={mobile} onFlip={playFlip}>
+          {pageImages.slice(1).map((src, idx) => (
             <div key={idx} className="demoPage bg-[#fdfaf6] border border-[#f0ebe1] relative overflow-hidden">
-              {src && <img src={src} alt={`Trang ${idx + 1}`} className="w-full h-full object-contain" />}
+              {src && <img src={src} alt={`Trang ${idx + 2}`} className="w-full h-full object-contain" />}
               <div className={`absolute inset-y-0 ${idx % 2 === 0 ? "right-0 w-6 bg-gradient-to-l" : "left-0 w-6 bg-gradient-to-r"} from-black/10 to-transparent pointer-events-none`} />
             </div>
           ))}

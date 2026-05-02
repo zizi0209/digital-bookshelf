@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useCoverFromStorage } from "./pdf-cover";
 
 const COLORS = ["#6b5d50", "#5a5a40", "#7d5a5a", "#5c544d", "#8a7d6b", "#6b6b4e", "#7a6852"];
 
@@ -8,19 +9,24 @@ interface ShelfBookProps {
   title: string;
   author?: string;
   coverUrl?: string;
+  fileStorageId?: string;
+  fileType?: string;
+  source?: "books" | "gallery";
   onClick?: () => void;
   delay?: number;
 }
 
-export function ShelfBook({ title, author, coverUrl, onClick, delay = 0 }: ShelfBookProps) {
+function ShelfBookInner({ title, author, coverUrl, fileStorageId, fileType, source = "books", onClick, delay = 0 }: ShelfBookProps) {
+  const extractedCover = useCoverFromStorage(fileStorageId, fileType, source);
+  const displayCover = coverUrl ?? extractedCover;
   const hash = title.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
   const fallbackColor = COLORS[hash % COLORS.length];
 
   return (
     <div className="shelf-book animate-fadeInUp" onClick={onClick} style={{ animationDelay: `${delay}ms` }}>
-      <div className="shelf-book-cover" style={!coverUrl ? { background: fallbackColor } : undefined}>
-        {coverUrl ? (
-          <Image src={coverUrl} alt={title} fill className="object-cover" referrerPolicy="no-referrer" sizes="130px" />
+      <div className="shelf-book-cover" style={!displayCover ? { background: fallbackColor } : undefined}>
+        {displayCover ? (
+          <Image src={displayCover} alt={title} fill className="object-cover" referrerPolicy="no-referrer" sizes="130px" unoptimized={displayCover.startsWith("data:")} />
         ) : (
           <div className="flex flex-col items-center justify-center h-full p-4 text-center">
             <span className="font-serif font-bold text-sm leading-tight line-clamp-3 text-[#fdfaf6]">{title}</span>
@@ -32,6 +38,10 @@ export function ShelfBook({ title, author, coverUrl, onClick, delay = 0 }: Shelf
       <p className="shelf-book-title">{title}</p>
     </div>
   );
+}
+
+export function ShelfBook(props: ShelfBookProps) {
+  return <ShelfBookInner {...props} />;
 }
 
 export function BookshelfGrid<T extends { _id: string }>({
