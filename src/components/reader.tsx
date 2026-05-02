@@ -50,7 +50,9 @@ function useDims(pageRatio = 0) {
         const w = vw - 16;
         setS({ w, h: Math.min(Math.round(w / r), vh - 80), mobile: true });
       } else {
-        const maxH = vh - 60, maxW = Math.floor((vw - 80) / 2);
+        // Dự phòng 100px mỗi bên cho nút prev/next + nút đóng
+        const maxH = vh - 80;
+        const maxW = Math.floor((vw - 200) / 2);
         const h = Math.min(maxH, Math.round(maxW / r));
         setS({ w: Math.round(h * r), h, mobile: false });
       }
