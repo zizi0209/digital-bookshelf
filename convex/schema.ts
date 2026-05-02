@@ -13,6 +13,7 @@ export default defineSchema({
     fileType: v.optional(v.string()), // "pdf" | "epub"
     fileName: v.optional(v.string()),
     isFeatured: v.optional(v.boolean()),
+    isHidden: v.optional(v.boolean()),
     createdAt: v.number(),
   }).index("by_genre", ["genre"]),
 

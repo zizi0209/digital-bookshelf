@@ -25,6 +25,26 @@ export const listAll = query({
   handler: async (ctx) => ctx.db.query("gallery").order("desc").collect(),
 });
 
+// Lọc theo status + search theo tiêu đề / tên tác giả
+export const listFiltered = query({
+  args: {
+    status: v.optional(v.string()), // "pending" | "approved" | "rejected" | undefined (all)
+    search: v.optional(v.string()),
+  },
+  handler: async (ctx, { status, search }) => {
+    let items = status
+      ? await ctx.db.query("gallery").withIndex("by_status", (q) => q.eq("status", status)).order("desc").collect()
+      : await ctx.db.query("gallery").order("desc").collect();
+    if (search) {
+      const q = search.toLowerCase();
+      items = items.filter(
+        (b) => b.title.toLowerCase().includes(q) || b.authorName.toLowerCase().includes(q),
+      );
+    }
+    return items;
+  },
+});
+
 export const get = query({
   args: { id: v.id("gallery") },
   handler: async (ctx, args) => ctx.db.get(args.id),

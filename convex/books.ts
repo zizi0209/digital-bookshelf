@@ -34,10 +34,33 @@ export const remove = mutation({
 export const list = query({
   args: { genre: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    if (args.genre) {
-      return ctx.db.query("books").withIndex("by_genre", (q) => q.eq("genre", args.genre!)).order("desc").collect();
+    const all = await ctx.db.query("books").order("desc").collect();
+    const visible = all.filter((b) => !b.isHidden);
+    if (args.genre) return visible.filter((b) => b.genre === args.genre);
+    return visible;
+  },
+});
+
+// Dành cho admin — trả về tất cả (kể cả ẩn)
+export const listAdmin = query({
+  args: { genre: v.optional(v.string()), search: v.optional(v.string()) },
+  handler: async (ctx, { genre, search }) => {
+    let items = await ctx.db.query("books").order("desc").collect();
+    if (genre) items = items.filter((b) => b.genre === genre);
+    if (search) {
+      const q = search.toLowerCase();
+      items = items.filter((b) => b.title.toLowerCase().includes(q));
     }
-    return ctx.db.query("books").order("desc").collect();
+    return items;
+  },
+});
+
+export const toggleHidden = mutation({
+  args: { id: v.id("books") },
+  handler: async (ctx, { id }) => {
+    const book = await ctx.db.get(id);
+    if (!book) throw new Error("Không tìm thấy tác phẩm");
+    return ctx.db.patch(id, { isHidden: !book.isHidden });
   },
 });
 
