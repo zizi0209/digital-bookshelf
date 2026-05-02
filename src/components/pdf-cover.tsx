@@ -4,8 +4,11 @@ import { useEffect, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
-// Lấy dataURL của trang 1 PDF từ một URL
-async function renderFirstPage(url: string): Promise<string> {
+interface CoverData { dataUrl: string; ratio: number; } // ratio = width/height
+
+const coverCache = new Map<string, CoverData>();
+
+async function renderFirstPage(url: string): Promise<CoverData> {
   const pdfjsLib = await import("pdfjs-dist");
   pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
     "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -20,33 +23,52 @@ async function renderFirstPage(url: string): Promise<string> {
   canvas.height = viewport.height;
   const ctx = canvas.getContext("2d")!;
   await page.render({ canvasContext: ctx, viewport, canvas } as Parameters<typeof page.render>[0]).promise;
-  return canvas.toDataURL("image/jpeg", 0.85);
+  return { dataUrl: canvas.toDataURL("image/jpeg", 0.85), ratio: viewport.width / viewport.height };
 }
-
-// Cache để tránh render lại cùng một PDF nhiều lần
-const coverCache = new Map<string, string>();
 
 export function usePdfCover(url: string | null | undefined): string | null {
   const [dataUrl, setDataUrl] = useState<string | null>(() =>
-    url ? (coverCache.get(url) ?? null) : null
+    url ? (coverCache.get(url)?.dataUrl ?? null) : null
   );
 
   useEffect(() => {
     if (!url) return;
-    if (coverCache.has(url)) { setDataUrl(coverCache.get(url)!); return; }
+    const cached = coverCache.get(url);
+    if (cached) { setDataUrl(cached.dataUrl); return; }
     let cancelled = false;
-    renderFirstPage(url).then((img) => {
+    renderFirstPage(url).then((data) => {
       if (cancelled) return;
-      coverCache.set(url, img);
-      setDataUrl(img);
-    }).catch(() => { /* silent — fallback sẽ hiển thị */ });
+      coverCache.set(url, data);
+      setDataUrl(data.dataUrl);
+    }).catch(() => { /* silent */ });
     return () => { cancelled = true; };
   }, [url]);
 
   return dataUrl;
 }
 
-// Component lấy file URL từ Convex rồi trích xuất bìa PDF
+// Trả aspect ratio (width/height) của trang 1 PDF, mặc định 0.68 (portrait chuẩn)
+export function usePdfAspectRatio(url: string | null | undefined): number {
+  const [ratio, setRatio] = useState<number>(() =>
+    url ? (coverCache.get(url)?.ratio ?? 0) : 0
+  );
+
+  useEffect(() => {
+    if (!url) return;
+    const cached = coverCache.get(url);
+    if (cached) { setRatio(cached.ratio); return; }
+    let cancelled = false;
+    renderFirstPage(url).then((data) => {
+      if (cancelled) return;
+      coverCache.set(url, data);
+      setRatio(data.ratio);
+    }).catch(() => { /* silent */ });
+    return () => { cancelled = true; };
+  }, [url]);
+
+  return ratio; // 0 = chưa biết
+}
+
 export function useCoverFromStorage(
   fileStorageId: string | undefined,
   fileType: string | undefined,
@@ -57,6 +79,19 @@ export function useCoverFromStorage(
     fileStorageId ? { storageId: fileStorageId } : "skip",
   );
   const isPdf = fileType === "pdf";
-  const cover = usePdfCover(isPdf && fileUrl ? fileUrl : null);
-  return cover;
+  return usePdfCover(isPdf && fileUrl ? fileUrl : null);
+}
+
+// Trả ratio từ storageId — dùng cho shelf/book-3d
+export function useAspectRatioFromStorage(
+  fileStorageId: string | undefined,
+  fileType: string | undefined,
+  source: "books" | "gallery",
+): number {
+  const fileUrl = useQuery(
+    source === "books" ? api.books.getFileUrl : api.gallery.getFileUrl,
+    fileStorageId ? { storageId: fileStorageId } : "skip",
+  );
+  const isPdf = fileType === "pdf";
+  return usePdfAspectRatio(isPdf && fileUrl ? fileUrl : null);
 }

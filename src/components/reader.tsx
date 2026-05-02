@@ -10,7 +10,6 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
-// Worker — cách chuẩn theo docs react-pdf v10, dùng import.meta.url (không CDN)
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
   import.meta.url,
@@ -47,21 +46,33 @@ function usePageFlipSound() {
 
 const nfc = (s: string) => s.normalize("NFC");
 
-/* ---------- Viewport dims ---------- */
-function useDims() {
+/* ---------- Viewport dims — nhận aspect ratio thực của sách ---------- */
+// ratio = width/height (0 = chưa biết, dùng 0.68 portrait)
+function useDims(pageRatio = 0) {
   const [s, setS] = useState({ w: 500, h: 700, mobile: false });
   useEffect(() => {
+    const r = pageRatio > 0 ? pageRatio : 0.68;
     const calc = () => {
       const vw = window.innerWidth, vh = window.innerHeight;
-      if (vw < 768) { setS({ w: vw - 16, h: vh - 80, mobile: true }); }
-      else {
-        const h = vh - 60, w = Math.min(Math.round(h * 0.68), Math.floor((vw - 80) / 2));
+      if (vw < 768) {
+        // Mobile: full width, height từ ratio
+        const w = vw - 16;
+        const h = Math.min(Math.round(w / r), vh - 80);
+        setS({ w, h, mobile: true });
+      } else {
+        // Desktop: ưu tiên chiều cao viewport, width từ ratio
+        const maxH = vh - 60;
+        const maxW = Math.floor((vw - 80) / 2); // mỗi trang chiếm nửa book width
+        // Với sách ngang: maxW có thể là bottleneck
+        const hFromW = Math.round(maxW / r);
+        const h = Math.min(maxH, hFromW);
+        const w = Math.round(h * r);
         setS({ w, h, mobile: false });
       }
     };
     calc(); window.addEventListener("resize", calc);
     return () => window.removeEventListener("resize", calc);
-  }, []);
+  }, [pageRatio]);
   return s;
 }
 
@@ -132,39 +143,42 @@ function FlipBookShell({ title, author, coverUrl, onClose, bookRef, w, h, mobile
 }
 
 /* ==========================================================
-   PDF Flip Reader — dùng react-pdf render từng trang thành
-   canvas, rồi chụp ảnh dataURL → đưa vào HTMLFlipBook
+   PDF Flip Reader
    ========================================================== */
 function PdfFlipReader({ url, title, author, coverUrl, onClose }: {
   url: string; title: string; author?: string; coverUrl?: string; onClose: () => void;
 }) {
   const playFlip = usePageFlipSound();
-  const { w, h, mobile } = useDims();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const bookRef = useRef<any>(null);
   const [numPages, setNumPages] = useState(0);
   const [pageImages, setPageImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pageRatio, setPageRatio] = useState(0); // ratio từ trang 1 PDF
 
-  // Khi document load xong → render từng trang thành ảnh
+  const { w, h, mobile } = useDims(pageRatio);
+
   const onDocLoad = useCallback(({ numPages: n }: { numPages: number }) => setNumPages(n), []);
 
-  // Lưu ref của các Page canvas để capture ảnh
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
-
   useEffect(() => {
     if (numPages === 0) return;
     pageRefs.current = Array.from({ length: numPages }, () => null);
   }, [numPages]);
 
-  // Sau khi tất cả Page render, capture canvas → ảnh
   const capturePages = useCallback(async () => {
     if (pageRefs.current.some((r) => !r)) return;
     const imgs: string[] = [];
-    for (const div of pageRefs.current) {
+    for (const [i, div] of pageRefs.current.entries()) {
       const canvas = div?.querySelector("canvas");
-      if (canvas) imgs.push(canvas.toDataURL("image/jpeg", 0.88));
-      else imgs.push("");
+      if (canvas) {
+        if (i === 0 && canvas.width > 0 && canvas.height > 0) {
+          setPageRatio(canvas.width / canvas.height);
+        }
+        imgs.push(canvas.toDataURL("image/jpeg", 0.88));
+      } else {
+        imgs.push("");
+      }
     }
     setPageImages(imgs);
     setLoading(false);
@@ -179,7 +193,6 @@ function PdfFlipReader({ url, title, author, coverUrl, onClose }: {
     });
   }, [numPages, capturePages]);
 
-  // Ẩn vùng render thật, chỉ dùng để capture
   return (
     <>
       {/* Render ẩn để capture canvas */}
@@ -188,7 +201,7 @@ function PdfFlipReader({ url, title, author, coverUrl, onClose }: {
           <Document file={url} onLoadSuccess={onDocLoad}>
             {Array.from({ length: numPages }, (_, i) => (
               <div key={i} ref={(el) => { pageRefs.current[i] = el; }}>
-                <Page pageNumber={i + 1} width={w * 1.2} onRenderSuccess={handlePageRender} renderAnnotationLayer={false} renderTextLayer={false} />
+                <Page pageNumber={i + 1} width={800} onRenderSuccess={handlePageRender} renderAnnotationLayer={false} renderTextLayer={false} />
               </div>
             ))}
           </Document>
@@ -217,7 +230,7 @@ function PdfFlipReader({ url, title, author, coverUrl, onClose }: {
 }
 
 /* ==========================================================
-   EPUB — hiển thị qua iframe (đơn giản, đáng tin cậy)
+   EPUB — hiển thị qua iframe
    ========================================================== */
 function EpubReader({ url, title, onClose }: { url: string; title: string; onClose: () => void }) {
   return (
@@ -286,11 +299,11 @@ export function Reader({ title, author, genre, coverUrl, pages, fileStorageId, f
 }
 
 /* ==========================================================
-   Text Flip Reader (sách có pages[] — dữ liệu mẫu)
+   Text Flip Reader
    ========================================================== */
 function TextFlipReader({ title, author, genre, coverUrl, pages, onClose }: Omit<ReaderProps, "fileStorageId" | "fileType" | "source">) {
   const playFlip = usePageFlipSound();
-  const { w, h, mobile } = useDims();
+  const { w, h, mobile } = useDims(); // text pages: portrait chuẩn
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const bookRef = useRef<any>(null);
   return (

@@ -2,9 +2,10 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useCoverFromStorage } from "./pdf-cover";
+import { useCoverFromStorage, useAspectRatioFromStorage } from "./pdf-cover";
 
 const COLORS = ["bg-[#7d6b5d]", "bg-[#5a5a40]", "bg-[#944e4e]", "bg-[#6b5a48]", "bg-[#8a7d6b]"];
+const BASE_H = 192; // px — chiều cao cố định, width tính từ ratio
 
 interface Book3DProps {
   title: string;
@@ -19,12 +20,20 @@ interface Book3DProps {
 
 export function Book3D({ title, author, coverUrl, fileStorageId, fileType, source = "books", onClick, className = "" }: Book3DProps) {
   const extractedCover = useCoverFromStorage(fileStorageId, fileType, source);
+  const storedRatio = useAspectRatioFromStorage(fileStorageId, fileType, source);
   const displayCover = coverUrl ?? extractedCover;
   const hash = title.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
   const fallback = COLORS[hash % COLORS.length];
 
+  const ratio = storedRatio || 0.68;
+  const w = Math.round(BASE_H * ratio);
+
   return (
-    <div className={`perspective-1000 w-32 md:w-36 lg:w-40 h-48 md:h-56 lg:h-60 cursor-pointer group ${className}`} onClick={onClick}>
+    <div
+      className={`perspective-1000 cursor-pointer group ${className}`}
+      style={{ width: w, height: BASE_H }}
+      onClick={onClick}
+    >
       <motion.div
         className="w-full h-full relative preserve-3d"
         whileHover={{ rotateY: -15, scale: 1.05, y: -8 }}

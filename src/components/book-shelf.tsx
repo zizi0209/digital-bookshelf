@@ -1,9 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useCoverFromStorage } from "./pdf-cover";
+import { useCoverFromStorage, useAspectRatioFromStorage } from "./pdf-cover";
 
 const COLORS = ["#6b5d50", "#5a5a40", "#7d5a5a", "#5c544d", "#8a7d6b", "#6b6b4e", "#7a6852"];
+
+// Chiều cao chuẩn (px) — width sẽ tính từ ratio
+const BASE_H = 185;
+const BASE_H_MD = 150;
+const BASE_H_SM = 115;
 
 interface ShelfBookProps {
   title: string;
@@ -18,15 +23,33 @@ interface ShelfBookProps {
 
 function ShelfBookInner({ title, author, coverUrl, fileStorageId, fileType, source = "books", onClick, delay = 0 }: ShelfBookProps) {
   const extractedCover = useCoverFromStorage(fileStorageId, fileType, source);
+  const storedRatio = useAspectRatioFromStorage(fileStorageId, fileType, source);
   const displayCover = coverUrl ?? extractedCover;
+
+  // ratio = width/height — 0 khi chưa biết → dùng portrait chuẩn
+  const ratio = storedRatio || 0.68;
+  const w = Math.round(BASE_H * ratio);
+
   const hash = title.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
   const fallbackColor = COLORS[hash % COLORS.length];
 
   return (
     <div className="shelf-book animate-fadeInUp" onClick={onClick} style={{ animationDelay: `${delay}ms` }}>
-      <div className="shelf-book-cover" style={!displayCover ? { background: fallbackColor } : undefined}>
+      <div
+        className="shelf-book-cover"
+        style={{
+          // CSS vars để responsive media queries có thể dùng var()
+          "--book-w": `${w}px`,
+          "--book-h": `${BASE_H}px`,
+          "--book-w-md": `${Math.round(BASE_H_MD * ratio)}px`,
+          "--book-h-md": `${BASE_H_MD}px`,
+          "--book-w-sm": `${Math.round(BASE_H_SM * ratio)}px`,
+          "--book-h-sm": `${BASE_H_SM}px`,
+          ...(!displayCover ? { background: fallbackColor } : {}),
+        } as React.CSSProperties}
+      >
         {displayCover ? (
-          <Image src={displayCover} alt={title} fill className="object-cover" referrerPolicy="no-referrer" sizes="130px" unoptimized={displayCover.startsWith("data:")} />
+          <Image src={displayCover} alt={title} fill className="object-cover" referrerPolicy="no-referrer" sizes="200px" unoptimized={displayCover.startsWith("data:")} />
         ) : (
           <div className="flex flex-col items-center justify-center h-full p-4 text-center">
             <span className="font-serif font-bold text-sm leading-tight line-clamp-3 text-[#fdfaf6]">{title}</span>
@@ -34,7 +57,7 @@ function ShelfBookInner({ title, author, coverUrl, fileStorageId, fileType, sour
           </div>
         )}
       </div>
-      <div className="shelf-book-shadow" />
+      <div className="shelf-book-shadow" style={{ width: w }} />
       <p className="shelf-book-title">{title}</p>
     </div>
   );
