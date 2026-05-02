@@ -7,13 +7,15 @@ import { AnimatePresence } from "framer-motion";
 import { Navbar } from "@/components/navbar";
 import { ShelfBook, BookshelfGrid } from "@/components/book-shelf";
 import { ShelfHeader } from "@/components/shelf-header";
-import { Reader } from "@/components/reader";
+import dynamic from "next/dynamic";
+const Reader = dynamic(() => import("@/components/reader").then((m) => ({ default: m.Reader })), { ssr: false });
 import { BookSkeleton } from "@/components/skeleton";
 import { Library } from "lucide-react";
 
 type BookDoc = {
   _id: string; title: string; description: string; genre: string;
   coverUrl?: string; pages: string[]; isFeatured?: boolean; createdAt: number;
+  fileStorageId?: string; fileType?: string;
 };
 
 type SortMode = "name" | "date";
@@ -69,7 +71,9 @@ export default function Home() {
       <AnimatePresence>
         {selected && (
           <Reader title={selected.title} author="Tsukizoe" genre={selected.genre}
-            coverUrl={selected.coverUrl} pages={selected.pages} onClose={() => setSelected(null)} />
+            coverUrl={selected.coverUrl} pages={selected.pages}
+            fileStorageId={selected.fileStorageId} fileType={selected.fileType}
+            source="books" onClose={() => setSelected(null)} />
         )}
       </AnimatePresence>
     </main>

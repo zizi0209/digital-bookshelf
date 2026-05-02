@@ -3,7 +3,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { Reader } from "@/components/reader";
+import dynamic from "next/dynamic";
+const Reader = dynamic(() => import("@/components/reader").then((m) => ({ default: m.Reader })), { ssr: false });
 import { toast } from "sonner";
 import {
   Clock, BookCheck, BookX, Eye, CheckCircle, XCircle, Trash2, Search,
