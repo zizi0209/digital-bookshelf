@@ -73,10 +73,11 @@ interface ShellProps {
 }
 function FlipBookShell({ title, author, coverUrl, onClose, bookRef, w, h, mobile, onFlip, children }: ShellProps) {
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 md:p-4">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 md:p-4" onClick={onClose}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
         className="relative flex justify-center items-center z-10"
+        onClick={(e) => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute top-0 -right-16 text-[#f5f0e6] hover:text-white hover:bg-white/20 z-[70] rounded-full p-2">
           <X className="w-6 h-6 md:w-8 md:h-8" />
