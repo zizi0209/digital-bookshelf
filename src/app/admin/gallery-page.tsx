@@ -28,8 +28,9 @@ type FilterStatus = "" | "pending" | "approved" | "rejected";
 
 // ─── Tab: Chờ duyệt ───────────────────────────────────────────────────────────
 function PendingTab() {
-  const [preview, setPreview] = useState<GalleryItem | null>(null);
+  const [previewId, setPreviewId] = useState<Id<"gallery"> | null>(null);
   const items = useQuery(api.gallery.listPending);
+  const previewDoc = useQuery(api.gallery.get, previewId ? { id: previewId } : "skip");
   const approve = useMutation(api.gallery.approve);
   const reject  = useMutation(api.gallery.reject);
   const remove  = useMutation(api.gallery.remove);
@@ -42,7 +43,7 @@ function PendingTab() {
         <div className="item-list">
           {items.map((item) => (
             <GalleryCard key={item._id} item={item as GalleryItem}
-              onView={() => setPreview(item as GalleryItem)}
+              onView={() => setPreviewId(item._id)}
               onApprove={async () => { await approve({ id: item._id }); toast.success("Đã duyệt!"); }}
               onReject={async ()  => { await reject({ id: item._id });  toast.info("Đã từ chối."); }}
               onRemove={async ()  => { if (confirm("Xóa vĩnh viễn?")) { await remove({ id: item._id }); toast.success("Đã xóa."); } }}
@@ -51,10 +52,10 @@ function PendingTab() {
         </div>
       )}
       <AnimatePresence>
-        {preview && <Reader title={preview.title} author={preview.authorName} genre={preview.genre}
-          coverUrl={preview.coverUrl} pages={preview.pages ?? []}
-          fileStorageId={preview.fileStorageId} fileType={preview.fileType}
-          source="gallery" onClose={() => setPreview(null)} />}
+        {previewId && previewDoc && <Reader title={previewDoc.title} author={previewDoc.authorName} genre={previewDoc.genre}
+          coverUrl={previewDoc.coverUrl} pages={previewDoc.pages ?? []}
+          fileStorageId={previewDoc.fileStorageId} fileType={previewDoc.fileType}
+          source="gallery" onClose={() => setPreviewId(null)} />}
       </AnimatePresence>
     </>
   );
@@ -62,9 +63,10 @@ function PendingTab() {
 
 // ─── Tab: Xem lại (có lọc + search) ─────────────────────────────────────────
 function ReviewTab() {
-  const [preview, setPreview] = useState<GalleryItem | null>(null);
+  const [previewId, setPreviewId] = useState<Id<"gallery"> | null>(null);
   const [search, setSearch]   = useState("");
   const [status, setStatus]   = useState<FilterStatus>("");
+  const previewDoc = useQuery(api.gallery.get, previewId ? { id: previewId } : "skip");
   const approve = useMutation(api.gallery.approve);
   const reject  = useMutation(api.gallery.reject);
   const remove  = useMutation(api.gallery.remove);
@@ -95,7 +97,7 @@ function ReviewTab() {
         <div className="item-list">
           {items.map((item: GalleryItem) => (
             <GalleryCard key={item._id} item={item as GalleryItem}
-              onView={() => setPreview(item as GalleryItem)}
+              onView={() => setPreviewId(item._id)}
               onApprove={item.status !== "approved" ? async () => { await approve({ id: item._id }); toast.success("Đã duyệt!"); } : undefined}
               onReject={item.status !== "rejected"  ? async () => { await reject({ id: item._id });  toast.info("Đã từ chối."); }  : undefined}
               onRemove={async () => { if (confirm("Xóa vĩnh viễn?")) { await remove({ id: item._id }); toast.success("Đã xóa."); } }}
@@ -104,10 +106,10 @@ function ReviewTab() {
         </div>
       )}
       <AnimatePresence>
-        {preview && <Reader title={preview.title} author={preview.authorName} genre={preview.genre}
-          coverUrl={preview.coverUrl} pages={preview.pages ?? []}
-          fileStorageId={preview.fileStorageId} fileType={preview.fileType}
-          source="gallery" onClose={() => setPreview(null)} />}
+        {previewId && previewDoc && <Reader title={previewDoc.title} author={previewDoc.authorName} genre={previewDoc.genre}
+          coverUrl={previewDoc.coverUrl} pages={previewDoc.pages ?? []}
+          fileStorageId={previewDoc.fileStorageId} fileType={previewDoc.fileType}
+          source="gallery" onClose={() => setPreviewId(null)} />}
       </AnimatePresence>
     </>
   );

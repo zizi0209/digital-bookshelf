@@ -1,5 +1,9 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import type { Doc } from "./_generated/dataModel";
+
+// Strip `pages` from list results — pages chỉ cần khi đọc (dùng get())
+function slim({ pages: _, ...rest }: Doc<"books">) { return rest; }
 
 export const generateUploadUrl = mutation({
   args: {},
@@ -38,7 +42,7 @@ export const list = query({
       ? ctx.db.query("books").withIndex("by_genre", (q) => q.eq("genre", args.genre!))
       : ctx.db.query("books");
     const items = await base.order("desc").take(100);
-    return items.filter((b) => !b.isHidden);
+    return items.filter((b) => !b.isHidden).map(slim);
   },
 });
 
@@ -54,7 +58,7 @@ export const listAdmin = query({
       const s = search.toLowerCase();
       items = items.filter((b) => b.title.toLowerCase().includes(s));
     }
-    return items;
+    return items.map(slim);
   },
 });
 

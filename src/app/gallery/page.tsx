@@ -11,20 +11,16 @@ import dynamic from "next/dynamic";
 const Reader = dynamic(() => import("@/components/reader").then((m) => ({ default: m.Reader })), { ssr: false });
 import { BookSkeleton } from "@/components/skeleton";
 import { Users } from "lucide-react";
-
-type GalleryDoc = {
-  _id: string; title: string; authorName: string; description: string;
-  genre: string; coverUrl?: string; pages: string[]; status: string; createdAt: number;
-  fileStorageId?: string; fileType?: string;
-};
+import type { Id } from "../../../convex/_generated/dataModel";
 
 type SortMode = "name" | "date";
 
 export default function GalleryPage() {
-  const [selected, setSelected] = useState<GalleryDoc | null>(null);
+  const [selectedId, setSelectedId] = useState<Id<"gallery"> | null>(null);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortMode>("date");
   const items = useQuery(api.gallery.listApproved, {});
+  const selectedItem = useQuery(api.gallery.get, selectedId ? { id: selectedId } : "skip");
 
   const filtered = useMemo(() => {
     if (!items) return undefined;
@@ -55,22 +51,22 @@ export default function GalleryPage() {
           </div>
         </div>
       ) : (
-        <BookshelfGrid items={filtered as GalleryDoc[]} perRow={5}
+        <BookshelfGrid items={filtered} perRow={5}
           renderBook={(item, i) => (
             <ShelfBook key={item._id} title={item.title} author={item.authorName} coverUrl={item.coverUrl}
               fileStorageId={item.fileStorageId} fileType={item.fileType} source="gallery"
-              onClick={() => setSelected(item as unknown as GalleryDoc)} delay={i * 40} />
+              onClick={() => setSelectedId(item._id as Id<"gallery">)} delay={i * 40} />
           )} />
       )}
 
       <div className="shelf-floor" />
 
       <AnimatePresence>
-        {selected && (
-          <Reader title={selected.title} author={selected.authorName} genre={selected.genre}
-            coverUrl={selected.coverUrl} pages={selected.pages ?? []}
-            fileStorageId={selected.fileStorageId} fileType={selected.fileType}
-            source="gallery" onClose={() => setSelected(null)} />
+        {selectedId && selectedItem && (
+          <Reader title={selectedItem.title} author={selectedItem.authorName} genre={selectedItem.genre}
+            coverUrl={selectedItem.coverUrl} pages={selectedItem.pages ?? []}
+            fileStorageId={selectedItem.fileStorageId} fileType={selectedItem.fileType}
+            source="gallery" onClose={() => setSelectedId(null)} />
         )}
       </AnimatePresence>
     </main>

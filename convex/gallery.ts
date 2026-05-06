@@ -1,5 +1,8 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import type { Doc } from "./_generated/dataModel";
+
+function slim({ pages: _, ...rest }: Doc<"gallery">) { return rest; }
 
 export const listApproved = query({
   args: { genre: v.optional(v.string()) },
@@ -7,14 +10,17 @@ export const listApproved = query({
     const base = args.genre
       ? ctx.db.query("gallery").withIndex("by_status_genre", (q) => q.eq("status", "approved").eq("genre", args.genre!))
       : ctx.db.query("gallery").withIndex("by_status", (q) => q.eq("status", "approved"));
-    return base.order("desc").take(100);
+    const items = await base.order("desc").take(100);
+    return items.map(slim);
   },
 });
 
 export const listPending = query({
   args: {},
-  handler: async (ctx) =>
-    ctx.db.query("gallery").withIndex("by_status", (q) => q.eq("status", "pending")).order("desc").take(100),
+  handler: async (ctx) => {
+    const items = await ctx.db.query("gallery").withIndex("by_status", (q) => q.eq("status", "pending")).order("desc").take(100);
+    return items.map(slim);
+  },
 });
 
 export const countPending = query({
@@ -29,7 +35,10 @@ export const countPending = query({
 
 export const listAll = query({
   args: {},
-  handler: async (ctx) => ctx.db.query("gallery").order("desc").take(200),
+  handler: async (ctx) => {
+    const items = await ctx.db.query("gallery").order("desc").take(200);
+    return items.map(slim);
+  },
 });
 
 // Lọc theo status + search theo tiêu đề / tên tác giả
@@ -48,7 +57,7 @@ export const listFiltered = query({
         (b) => b.title.toLowerCase().includes(s) || b.authorName.toLowerCase().includes(s),
       );
     }
-    return items;
+    return items.map(slim);
   },
 });
 

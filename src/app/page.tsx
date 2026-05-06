@@ -11,21 +11,18 @@ import dynamic from "next/dynamic";
 const Reader = dynamic(() => import("@/components/reader").then((m) => ({ default: m.Reader })), { ssr: false });
 import { BookSkeleton } from "@/components/skeleton";
 import { Library } from "lucide-react";
-
-type BookDoc = {
-  _id: string; title: string; description: string; genre: string;
-  coverUrl?: string; pages: string[]; isFeatured?: boolean; createdAt: number;
-  fileStorageId?: string; fileType?: string;
-};
+import type { Id } from "../../convex/_generated/dataModel";
 
 type SortMode = "name" | "date";
 
 export default function Home() {
-  const [selected, setSelected] = useState<BookDoc | null>(null);
+  const [selectedId, setSelectedId] = useState<Id<"books"> | null>(null);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortMode>("date");
   const books = useQuery(api.books.list, {});
   const seed = useMutation(api.books.seed);
+  // Chỉ fetch full doc (có pages) khi user click đọc
+  const selectedBook = useQuery(api.books.get, selectedId ? { id: selectedId } : "skip");
 
   const filtered = useMemo(() => {
     if (!books) return undefined;
@@ -59,22 +56,22 @@ export default function Home() {
           </div>
         </div>
       ) : (
-        <BookshelfGrid items={filtered as BookDoc[]} perRow={5}
+        <BookshelfGrid items={filtered} perRow={5}
           renderBook={(book, i) => (
             <ShelfBook key={book._id} title={book.title} author="Tsukizoe" coverUrl={book.coverUrl}
               fileStorageId={book.fileStorageId} fileType={book.fileType} source="books"
-              onClick={() => setSelected(book as unknown as BookDoc)} delay={i * 40} />
+              onClick={() => setSelectedId(book._id as Id<"books">)} delay={i * 40} />
           )} />
       )}
 
       <div className="shelf-floor" />
 
       <AnimatePresence>
-        {selected && (
-          <Reader title={selected.title} author="Tsukizoe" genre={selected.genre}
-            coverUrl={selected.coverUrl} pages={selected.pages}
-            fileStorageId={selected.fileStorageId} fileType={selected.fileType}
-            source="books" onClose={() => setSelected(null)} />
+        {selectedId && selectedBook && (
+          <Reader title={selectedBook.title} author="Tsukizoe" genre={selectedBook.genre}
+            coverUrl={selectedBook.coverUrl} pages={selectedBook.pages}
+            fileStorageId={selectedBook.fileStorageId} fileType={selectedBook.fileType}
+            source="books" onClose={() => setSelectedId(null)} />
         )}
       </AnimatePresence>
     </main>
