@@ -159,7 +159,7 @@ function EmptyState({ icon, text }: { icon: React.ReactNode; text: string }) {
 // ─── GalleryPage ──────────────────────────────────────────────────────────────
 export function GalleryPage() {
   const [tab, setTab] = useState<"pending" | "review">("pending");
-  const pendingCount = useQuery(api.gallery.listPending)?.length ?? 0;
+  const pendingCount = useQuery(api.gallery.countPending) ?? 0;
 
   return (
     <div>

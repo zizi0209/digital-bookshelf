@@ -33,5 +33,6 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_status", ["status"])
+    .index("by_status_genre", ["status", "genre"])
     .index("by_author", ["authorEmail"]),
 });

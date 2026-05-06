@@ -34,10 +34,11 @@ export const remove = mutation({
 export const list = query({
   args: { genre: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const all = await ctx.db.query("books").order("desc").collect();
-    const visible = all.filter((b) => !b.isHidden);
-    if (args.genre) return visible.filter((b) => b.genre === args.genre);
-    return visible;
+    const base = args.genre
+      ? ctx.db.query("books").withIndex("by_genre", (q) => q.eq("genre", args.genre!))
+      : ctx.db.query("books");
+    const items = await base.order("desc").take(100);
+    return items.filter((b) => !b.isHidden);
   },
 });
 
@@ -45,11 +46,13 @@ export const list = query({
 export const listAdmin = query({
   args: { genre: v.optional(v.string()), search: v.optional(v.string()) },
   handler: async (ctx, { genre, search }) => {
-    let items = await ctx.db.query("books").order("desc").collect();
-    if (genre) items = items.filter((b) => b.genre === genre);
+    const base = genre
+      ? ctx.db.query("books").withIndex("by_genre", (q) => q.eq("genre", genre))
+      : ctx.db.query("books");
+    let items = await base.order("desc").take(100);
     if (search) {
-      const q = search.toLowerCase();
-      items = items.filter((b) => b.title.toLowerCase().includes(q));
+      const s = search.toLowerCase();
+      items = items.filter((b) => b.title.toLowerCase().includes(s));
     }
     return items;
   },

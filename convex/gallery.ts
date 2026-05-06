@@ -4,25 +4,32 @@ import { v } from "convex/values";
 export const listApproved = query({
   args: { genre: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const all = await ctx.db
-      .query("gallery")
-      .withIndex("by_status", (q) => q.eq("status", "approved"))
-      .order("desc")
-      .collect();
-    if (args.genre) return all.filter((b) => b.genre === args.genre);
-    return all;
+    const base = args.genre
+      ? ctx.db.query("gallery").withIndex("by_status_genre", (q) => q.eq("status", "approved").eq("genre", args.genre!))
+      : ctx.db.query("gallery").withIndex("by_status", (q) => q.eq("status", "approved"));
+    return base.order("desc").take(100);
   },
 });
 
 export const listPending = query({
   args: {},
   handler: async (ctx) =>
-    ctx.db.query("gallery").withIndex("by_status", (q) => q.eq("status", "pending")).order("desc").collect(),
+    ctx.db.query("gallery").withIndex("by_status", (q) => q.eq("status", "pending")).order("desc").take(100),
+});
+
+export const countPending = query({
+  args: {},
+  handler: async (ctx) => {
+    const items = await ctx.db.query("gallery")
+      .withIndex("by_status", (q) => q.eq("status", "pending"))
+      .collect();
+    return items.length;
+  },
 });
 
 export const listAll = query({
   args: {},
-  handler: async (ctx) => ctx.db.query("gallery").order("desc").collect(),
+  handler: async (ctx) => ctx.db.query("gallery").order("desc").take(200),
 });
 
 // Lọc theo status + search theo tiêu đề / tên tác giả
@@ -33,12 +40,12 @@ export const listFiltered = query({
   },
   handler: async (ctx, { status, search }) => {
     let items = status
-      ? await ctx.db.query("gallery").withIndex("by_status", (q) => q.eq("status", status)).order("desc").collect()
-      : await ctx.db.query("gallery").order("desc").collect();
+      ? await ctx.db.query("gallery").withIndex("by_status", (q) => q.eq("status", status)).order("desc").take(200)
+      : await ctx.db.query("gallery").order("desc").take(200);
     if (search) {
-      const q = search.toLowerCase();
+      const s = search.toLowerCase();
       items = items.filter(
-        (b) => b.title.toLowerCase().includes(q) || b.authorName.toLowerCase().includes(q),
+        (b) => b.title.toLowerCase().includes(s) || b.authorName.toLowerCase().includes(s),
       );
     }
     return items;
